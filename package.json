@@ -1,0 +1,14 @@
+{
+  "name": "primorina",
+  "version": "0.0.1",
+  "description": "log primogems",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.37"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "3096",
+  "license": "GPL-3.0-or-later"
+}
