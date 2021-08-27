@@ -61,7 +61,12 @@ function getDefaultQueryParams() {
   ]);
 }
 
-function getParamValueFromUrlQuesryStryng(url: string, param: string) {
+function getParamValueFromUrlQueryString(url: string, param: string) {
+  const anchor = url.indexOf("#");
+  if (anchor >= 0) {
+    url = url.substring(0, anchor);
+  }
+
   const start = url.indexOf(param + "=") + param.length + 1;
   const end = url.indexOf("&", start);
 
@@ -157,7 +162,7 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
   const endpoint = getApiEndpoint(logSheetInfo, getServerDivideFromUrl(config.authKeyUrl));
 
   const params = getDefaultQueryParams();
-  params.set(API_PARAM_AUTH_KEY, getParamValueFromUrlQuesryStryng(config.authKeyUrl, API_PARAM_AUTH_KEY));
+  params.set(API_PARAM_AUTH_KEY, getParamValueFromUrlQueryString(config.authKeyUrl, API_PARAM_AUTH_KEY));
   params.set(API_PARAM_LANG, config.lang);
   params.set(API_PARAM_SIZE, "20");
 
