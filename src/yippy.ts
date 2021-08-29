@@ -109,7 +109,7 @@ function displayReadme() {
         var text = arrayString[2];
         const richText = SpreadsheetApp.newRichTextValue()
           .setText(valueRange)
-          .setLinkUrl(["#gid=" + sheetREADME.getSheetId() + 'range=' + text])
+          .setLinkUrl("#gid=" + sheetREADME.getSheetId() + 'range=' + text)
           .build();
         sheetREADME.getRange(contentsStartIndex + i, 1).setRichTextValue(richText);
       }
@@ -129,7 +129,7 @@ function reorderSheets() {
     var sheetsToSort = settingsSheet.getRange(11, 2, 11, 1).getValues();
 
     for (var i = 0; i < sheetsToSort.length; i++) {
-      var sheetName = sheetsToSort[i];
+      var sheetName = sheetsToSort[i][0];
       if (sheetName != "") {
         var sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
         if (sheet) {
@@ -438,8 +438,8 @@ function updateItemsList() {
       }
       // Remove sheets
       var listOfSheetsToRemove = [];
-      var availableRanges = sheetAvailableSource.getRange(2, 1, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
-      availableRanges = String(availableRanges).split(",");
+      var availableRangesValues = sheetAvailableSource.getRange(2, 1, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
+      var availableRanges = String(availableRangesValues).split(",");
 
       if (dashboardSheet) {
         var sourceDocumentVersion = sheetAvailableSource.getRange("E1").getValues();
@@ -469,18 +469,19 @@ function updateItemsList() {
       }
 
       // Put available sheet into current
-      var skipRanges = sheetAvailableSource.getRange(2, 2, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
-      skipRanges = String(skipRanges).split(",");
-      var hiddenRanges = sheetAvailableSource.getRange(2, 3, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
-      hiddenRanges = String(hiddenRanges).split(",");
-      var settingsOptionRanges = sheetAvailableSource.getRange(2, 4, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
-      settingsOptionRanges = String(settingsOptionRanges).split(",");
+      var skipRangeValues = sheetAvailableSource.getRange(2, 2, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
+      var skipRanges = String(skipRangeValues).split(",");
+      var hiddenRangeValues = sheetAvailableSource.getRange(2, 3, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
+      var hiddenRanges = String(hiddenRangeValues).split(",");
+      var settingsOptionRangeValues = sheetAvailableSource.getRange(2, 4, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
+      var settingsOptionRanges = String(settingsOptionRangeValues).split(",");
 
       for (var i = 0; i < availableRanges.length; i++) {
         var nameOfBanner = availableRanges[i];
         var isSkipString = skipRanges[i];
         var isHiddenString = hiddenRanges[i];
         var settingOptionString = settingsOptionRanges[i];
+        var settingOptionNum = parseInt(settingOptionString);
 
         var sheetAvailableSelectionSource = sheetSource.getSheetByName(nameOfBanner);
         var storedSheet;
@@ -488,13 +489,13 @@ function updateItemsList() {
           // skip - disabled by source
         } else {
           if (sheetAvailableSelectionSource) {
-            if (settingOptionString == "" || settingOptionString == 0) {
+            if (settingOptionString == "" || settingOptionNum == 0) {
               //Enable without settings
               storedSheet = sheetAvailableSelectionSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(nameOfBanner);
             } else {
               // Check current setting has row
-              if (settingOptionString <= settingsSheet.getMaxRows()) {
-                var checkEnabledRanges = settingsSheet.getRange(settingOptionString, 2).getValue();
+              if (settingOptionNum <= settingsSheet.getMaxRows()) {
+                var checkEnabledRanges = settingsSheet.getRange(settingOptionNum, 2).getValue();
                 if (checkEnabledRanges == "YES") {
                   storedSheet = sheetAvailableSelectionSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(nameOfBanner);
                 } else {
