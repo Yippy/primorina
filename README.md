@@ -1,5 +1,5 @@
 # primorina
 
-Blank spreadsheet: https://docs.google.com/spreadsheets/d/1FWVDmNmBwDX7_AP00Idc9RbVqzggO6jMD0-xQnluhzY/edit?usp=sharing
+Save logs of Primogems/Genesis Crystal earnings and spendings using Google Sheets.
 
-Example spreadsheet: https://docs.google.com/spreadsheets/d/10u2NnQNXWbDbFyRwbYA9fiojYi0vm4geThv8UY5hAMA/edit?usp=sharing
+spreadsheet link: https://docs.google.com/spreadsheets/d/1VrNIbZGj2XhVZv7eRMgoSO3xUhOm0EVFGFqW0y1BLpI/edit#gid=2087370562
