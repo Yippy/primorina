@@ -3,7 +3,7 @@
 function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
   const config = getConfig();
   const reasonMap = getReasonMap(config);
-  const settingsSheet = SpreadsheetApp.getActive().getSheetByName('Settings');
+  const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
 
   let authKey: string, serverDivide: ServerDivide;
   try {
@@ -83,7 +83,7 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
   newRows.push(...curValues.slice(1));
   logSheet.getRange(2, 1, newRows.length, LOG_HEADER_ROW.length).setValues(newRows);
 
-  const dashboardSheet = SpreadsheetApp.getActive().getSheetByName('Dashboard');
+  const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(newRows.length);
   settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + ((newRows.length + 1) - (previousRowCount)));
 }
@@ -100,7 +100,7 @@ const LOG_RANGES = {
 };
 
 function importFromAPI() {
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName('Settings');
+  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   settingsSheet.getRange("E24").setValue(new Date());
   settingsSheet.getRange("E25").setValue("");
 

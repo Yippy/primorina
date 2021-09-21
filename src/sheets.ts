@@ -16,8 +16,8 @@ var dashboardRefreshRange = [
 ];
 
 function importButtonScript() {
-  var dashboardSheet = SpreadsheetApp.getActive().getSheetByName('Dashboard');
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName('Settings');
+  var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
+  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   if (dashboardSheet && settingsSheet) {
     var userImportSelection = dashboardSheet.getRange(dashboardEditRange[4]).getValue();
     var importSelectionText = dashboardSheet.getRange(dashboardEditRange[6]).getValue();
@@ -43,7 +43,7 @@ function displayReadme() {
     if (SpreadsheetApp.getActive().getSheets().length == 1) {
       placeHolderSheet = SpreadsheetApp.getActive().insertSheet();
     }
-    var sheetToRemove = SpreadsheetApp.getActive().getSheetByName('README');
+    var sheetToRemove = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_README);
     if (sheetToRemove) {
       // If exist remove from spreadsheet
       SpreadsheetApp.getActiveSpreadsheet().deleteSheet(sheetToRemove);
@@ -51,26 +51,26 @@ function displayReadme() {
     var sheetREADMESource;
 
     // Add Language
-    var settingsSheet = SpreadsheetApp.getActive().getSheetByName("Settings");
+    var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
     if (settingsSheet) {
       var languageFound = settingsSheet.getRange(2, 2).getValue();
-      sheetREADMESource = sheetSource.getSheetByName("README" + "-" + languageFound);
+      sheetREADMESource = sheetSource.getSheetByName(SHEET_NAME_README + "-" + languageFound);
     }
     if (sheetREADMESource) {
       // Found language
     } else {
       // Default
-      sheetREADMESource = sheetSource.getSheetByName("README");
+      sheetREADMESource = sheetSource.getSheetByName(SHEET_NAME_README);
     }
 
-    sheetREADMESource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName('README');
+    sheetREADMESource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(SHEET_NAME_README);
 
     // Remove placeholder if available
     if (placeHolderSheet) {
       // If exist remove from spreadsheet
       SpreadsheetApp.getActiveSpreadsheet().deleteSheet(placeHolderSheet);
     }
-    var sheetREADME = SpreadsheetApp.getActive().getSheetByName('README');
+    var sheetREADME = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_README);
     // Refresh Contents Links
     var contentsAvailable = sheetREADME.getRange(13, 1).getValue();
     var contentsStartIndex = 15;
