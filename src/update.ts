@@ -324,7 +324,7 @@ function updateItemsList() {
         var nameOfBanner = availableRanges[i];
         var isSkipString = skipRanges[i];
         var isHiddenString = hiddenRanges[i];
-        var settingOptionNum = parseInt(settingsOptionRanges[i]);
+        var settingOptionNum = settingsOptionRanges[i];
 
         var sheetAvailableSelectionSource = sheetSource.getSheetByName(nameOfBanner);
         var storedSheet;
