@@ -90,11 +90,13 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
 
 const getPrimogemLog = () => writeLogToSheet(PRIMOGEM_SHEET_INFO);
 const getCrystalLog = () => writeLogToSheet(CRYSTAL_SHEET_INFO);
+const getResinLog = () => writeLogToSheet(RESIN_SHEET_INFO);
 
 
 const LOG_RANGES = {
   "Primogem Log": { "range_status": "E26", "range_toggle": "E19", "range_dashboard_length": "C15" },
   "Crystal Log": { "range_status": "E27", "range_toggle": "E20", "range_dashboard_length": "C20" },
+  "Resin Log": { "range_status": "E28", "range_toggle": "E21", "range_dashboard_length": "C25" },
 };
 
 function importFromAPI() {
@@ -122,6 +124,8 @@ function importFromAPI() {
           getCrystalLog();
         } else if (logName == SHEET_NAME_PRIMOGEM_LOG) {
           getPrimogemLog();
+        } else if (logName == SHEET_NAME_RESIN_LOG) {
+          getResinLog();
         } else {
           settingsSheet.getRange(bannerSettings['range_status']).setValue("Error log sheet");
         }

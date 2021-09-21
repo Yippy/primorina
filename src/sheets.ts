@@ -134,9 +134,16 @@ function moveToSheetByName(nameOfSheet: string) {
   }
 }
 
-const moveToDashboardSheet = () => moveToSheetByName("Dashboard");
+const moveToDashboardSheet = () => moveToSheetByName(SHEET_NAME_DASHBOARD);
 const moveToSettingsSheet = () => moveToSheetByName(SHEET_NAME_SETTINGS);
-const moveToChangelogSheet = () => moveToSheetByName("Changelog");
-const moveToReadmeSheet = () => moveToSheetByName("README");
+const moveToChangelogSheet = () => moveToSheetByName(SHEET_NAME_CHANGELOG);
+const moveToReadmeSheet = () => moveToSheetByName(SHEET_NAME_README);
 const moveToPrimogemLogSheet = () => moveToSheetByName(SHEET_NAME_PRIMOGEM_LOG);
+const moveToPrimogemYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_PRIMOGEM_YEARLY_REPORT);
+const moveToPrimogemMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_PRIMOGEM_MONTHLY_REPORT);
 const moveToCrystalLogSheet = () => moveToSheetByName(SHEET_NAME_CRYSTAL_LOG);
+const moveToCrystalYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_CRYSTAL_YEARLY_REPORT);
+const moveToCrystalMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_CRYSTAL_MONTHLY_REPORT);
+const moveToResinLogSheet = () => moveToSheetByName(SHEET_NAME_RESIN_LOG);
+const moveToResinYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_RESIN_YEARLY_REPORT);
+const moveToResinMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_RESIN_MONTHLY_REPORT);
