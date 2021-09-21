@@ -155,6 +155,7 @@ function importDataManagement() {
   var wishHistoryNotDoneStatus = "NOT DONE";
   var wishHistoryDoneStatus = "DONE";
   var wishHistoryMissingStatus = "NOT FOUND";
+  var wishHistoryEmptyStatus = "EMPTY";
   var message = "";
   var title = "";
   var statusMessage = "";
@@ -183,17 +184,21 @@ function importDataManagement() {
         for (var i = 0; i < NAME_OF_LOG_HISTORIES.length; i++) {
           var bannerImportSheet = importSource.getSheetByName(NAME_OF_LOG_HISTORIES[i]);
 
-          var numberOfRows = bannerImportSheet.getMaxRows() - 1;
-          var range = bannerImportSheet.getRange(2, 1, numberOfRows, 5);
+          if (bannerImportSheet) {
+            var numberOfRows = bannerImportSheet.getMaxRows() - 1;
+            var range = bannerImportSheet.getRange(2, 1, numberOfRows, 5);
 
-          if (bannerImportSheet && numberOfRows > 0) {
-            var bannerSheet = SpreadsheetApp.getActive().getSheetByName(NAME_OF_LOG_HISTORIES[i]);
+            if (numberOfRows > 0) {
+              var bannerSheet = SpreadsheetApp.getActive().getSheetByName(NAME_OF_LOG_HISTORIES[i]);
 
-            if (bannerSheet) {
-              bannerSheet.getRange(2, 1, numberOfRows, 5).setValues(range.getValues());
-              settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryDoneStatus);
+              if (bannerSheet) {
+                bannerSheet.getRange(2, 1, numberOfRows, 5).setValues(range.getValues());
+                settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryDoneStatus);
+              } else {
+                settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryMissingStatus);
+              }
             } else {
-              settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryMissingStatus);
+              settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryEmptyStatus);
             }
           } else {
             settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryMissingStatus);
