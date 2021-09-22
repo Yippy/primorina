@@ -332,7 +332,7 @@ function updateItemsList() {
         var nameOfBanner = availableRanges[i];
         var isSkipString = skipRanges[i];
         var isHiddenString = hiddenRanges[i];
-        var settingOptionNum = settingsOptionRanges[i];
+        var settingOptionNum = parseInt(settingsOptionRanges[i]);
 
         var sheetAvailableSelectionSource = sheetSource.getSheetByName(nameOfBanner);
         var storedSheet;
@@ -340,7 +340,7 @@ function updateItemsList() {
           // skip - disabled by source
         } else {
           if (sheetAvailableSelectionSource) {
-            if (settingOptionNum) {
+            if (!settingOptionNum) {
               //Enable without settings
               storedSheet = sheetAvailableSelectionSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(nameOfBanner);
             } else {
