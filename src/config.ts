@@ -1,15 +1,25 @@
 // for license and source, visit https://github.com/3096/primorina
 
-const SCRIPT_VERSION = "v0.0.2";
+const SCRIPT_VERSION = "v0.0.4";
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
 
 // sheet names
+const SHEET_NAME_DASHBOARD = "Dashboard";
+const SHEET_NAME_CHANGELOG = "Changelog";
+const SHEET_NAME_README = "README";
 const SHEET_NAME_PRIMOGEM_LOG = "Primogem Log";
+const SHEET_NAME_PRIMOGEM_YEARLY_REPORT = "Primogem Yearly Report";
+const SHEET_NAME_PRIMOGEM_MONTHLY_REPORT = "Primogem Monthly Report";
 const SHEET_NAME_CRYSTAL_LOG = "Crystal Log";
+const SHEET_NAME_CRYSTAL_YEARLY_REPORT = "Crystal Yearly Report";
+const SHEET_NAME_CRYSTAL_MONTHLY_REPORT = "Crystal Monthly Report";
+const SHEET_NAME_RESIN_LOG = "Resin Log";
+const SHEET_NAME_RESIN_YEARLY_REPORT = "Resin Yearly Report";
+const SHEET_NAME_RESIN_MONTHLY_REPORT = "Resin Monthly Report";
 const SHEET_NAME_SETTINGS = "Settings";
 
-const NAME_OF_LOG_HISTORIES = [SHEET_NAME_PRIMOGEM_LOG, SHEET_NAME_CRYSTAL_LOG];
+const NAME_OF_LOG_HISTORIES = [SHEET_NAME_PRIMOGEM_LOG, SHEET_NAME_CRYSTAL_LOG, SHEET_NAME_RESIN_LOG];
 
 // sheet info
 interface ILogSheetInfo {
@@ -23,8 +33,13 @@ const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
 }
 
 const CRYSTAL_SHEET_INFO: ILogSheetInfo = {
-  sheetName: "Crystal Log",
+  sheetName: SHEET_NAME_CRYSTAL_LOG,
   apiPath: "/ysulog/api/getCrystalLog",
+}
+
+const RESIN_SHEET_INFO: ILogSheetInfo = {
+  sheetName: SHEET_NAME_RESIN_LOG,
+  apiPath: "/ysulog/api/getResinLog",
 }
 
 // locales

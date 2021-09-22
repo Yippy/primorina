@@ -3,7 +3,7 @@
 function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
   const config = getConfig();
   const reasonMap = getReasonMap(config);
-  const settingsSheet = SpreadsheetApp.getActive().getSheetByName('Settings');
+  const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
 
   let authKey: string, serverDivide: ServerDivide;
   try {
@@ -83,22 +83,24 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
   newRows.push(...curValues.slice(1));
   logSheet.getRange(2, 1, newRows.length, LOG_HEADER_ROW.length).setValues(newRows);
 
-  const dashboardSheet = SpreadsheetApp.getActive().getSheetByName('Dashboard');
+  const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(newRows.length);
   settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + ((newRows.length + 1) - (previousRowCount)));
 }
 
 const getPrimogemLog = () => writeLogToSheet(PRIMOGEM_SHEET_INFO);
 const getCrystalLog = () => writeLogToSheet(CRYSTAL_SHEET_INFO);
+const getResinLog = () => writeLogToSheet(RESIN_SHEET_INFO);
 
 
 const LOG_RANGES = {
   "Primogem Log": { "range_status": "E26", "range_toggle": "E19", "range_dashboard_length": "C15" },
   "Crystal Log": { "range_status": "E27", "range_toggle": "E20", "range_dashboard_length": "C20" },
+  "Resin Log": { "range_status": "E28", "range_toggle": "E21", "range_dashboard_length": "C25" },
 };
 
 function importFromAPI() {
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName('Settings');
+  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   settingsSheet.getRange("E24").setValue(new Date());
   settingsSheet.getRange("E25").setValue("");
 
@@ -122,6 +124,8 @@ function importFromAPI() {
           getCrystalLog();
         } else if (logName == SHEET_NAME_PRIMOGEM_LOG) {
           getPrimogemLog();
+        } else if (logName == SHEET_NAME_RESIN_LOG) {
+          getResinLog();
         } else {
           settingsSheet.getRange(bannerSettings['range_status']).setValue("Error log sheet");
         }
