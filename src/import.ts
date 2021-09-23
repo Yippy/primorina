@@ -79,10 +79,10 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
     addLogsToNewRows(entries);
     params.set(API_END_ID, entries[entries.length - 1].id);
   }
-
-  newRows.push(...curValues.slice(1));
-  logSheet.getRange(2, 1, newRows.length, LOG_HEADER_ROW.length).setValues(newRows);
-
+  if (newRows.length > 0) {
+    newRows.push(...curValues.slice(1));
+    logSheet.getRange(2, 1, newRows.length, LOG_HEADER_ROW.length).setValues(newRows);
+  }
   const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(newRows.length);
   settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + ((newRows.length + 1) - (previousRowCount)));
