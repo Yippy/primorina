@@ -25,7 +25,7 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   const logSheet = SpreadsheetApp.getActive().getSheetByName(logSheetInfo.sheetName);
   const curValues = logSheet.getDataRange().getValues();
-  const previousRowCount = curValues.length;
+  const previousLogCount = curValues.length - 1;
 
   const LOG_HEADER_ROW = curValues[0];
   const ID_INDEX = LOG_HEADER_ROW.indexOf("id");
@@ -79,13 +79,15 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
     addLogsToNewRows(entries);
     params.set(API_END_ID, entries[entries.length - 1].id);
   }
-  newRows.push(...curValues.slice(1));
+
+  const finalRows = newRows.concat(curValues.slice(1));
   if (newRows.length > 0) {
-    logSheet.getRange(2, 1, newRows.length, LOG_HEADER_ROW.length).setValues(newRows);
+    logSheet.getRange(2, 1, finalRows.length, LOG_HEADER_ROW.length).setValues(finalRows);
   }
+
   const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
-  dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(newRows.length);
-  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + ((newRows.length + 1) - (previousRowCount)));
+  dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(finalRows.length);
+  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
 }
 
 const getPrimogemLog = () => writeLogToSheet(PRIMOGEM_SHEET_INFO);
