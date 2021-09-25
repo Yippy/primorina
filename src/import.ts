@@ -29,10 +29,12 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   const LOG_HEADER_ROW = curValues[0];
   const ID_INDEX = LOG_HEADER_ROW.indexOf("id");
+  const TIME_INDEX = LOG_HEADER_ROW.indexOf("time");
+
+  const stopAtId: string = previousLogCount ? curValues[1][ID_INDEX] : null;
+  const lastLogDate: number = previousLogCount ? Date.parse(curValues[1][TIME_INDEX]) : null;
 
   const newRows = [];
-  const stopAtId = curValues.length > 1 ? curValues[1][ID_INDEX] : null;
-
   const addLogsToNewRows = (newLogs: LogEntry[]) => {
     for (const log of newLogs) {
       const newRow = [];
@@ -60,19 +62,43 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
   };
 
+  goingThroughApiResponses:
   while (true) {
     const response: ApiResponse = requestApiResponse(endpoint, params);
     const entries = response.data.list;
+
     if (entries.length === 0) {
       // reached the end of logs
+      if (previousLogCount) {
+        const userConfirm = SpreadsheetApp.getUi().alert(
+          "Warning",
+          `${logSheetInfo.sheetName} import could not match the last recorded entry; still import?\n`
+          + "(If you've recently imported to this log, something is likely wrong.)",
+          SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+        if (userConfirm !== SpreadsheetApp.getUi().Button.OK) {
+          settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Cancelled");
+          return;
+        }
+      }
       break;
     }
 
-    if (stopAtId) {
-      const stopAtIdx = entries.findIndex(entry => entry.id === stopAtId);
-      if (stopAtIdx >= 0) {
-        addLogsToNewRows(entries.slice(0, stopAtIdx));
-        break;
+    // check response agaist last log
+    if (previousLogCount) {
+      for (const [index, entry] of entries.entries()) {
+        if (entry.id === stopAtId) {
+          // found last id
+          addLogsToNewRows(entries.slice(0, index));
+          break goingThroughApiResponses;
+        }
+
+        if (Date.parse(entry.time) < lastLogDate) {
+          // found unexpected datetime
+          const errMsg = "imported date reached past last entry, check if account correct?\n"
+            + `cur entry ${JSON.stringify(entry)}, last entry ${JSON.stringify(curValues[1])}`;
+          settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue(errMsg);
+          throw Error(errMsg);
+        }
       }
     }
 
