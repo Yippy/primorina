@@ -182,20 +182,21 @@ function importDataManagement() {
       }
       if (importSource) {
         // Go through the available sheet list
-        for (var i = 0; i < NAME_OF_LOG_HISTORIES.length; i++) {
-          var bannerImportSheet = importSource.getSheetByName(NAME_OF_LOG_HISTORIES[i]);
+        const availableSheets = NAME_OF_LOG_HISTORIES.concat(NAME_OF_LOG_HISTORIES_HOYOLAB);
+        for (var i = 0; i < availableSheets.length; i++) {
+          var bannerImportSheet = importSource.getSheetByName(availableSheets[i]);
 
           if (bannerImportSheet) {
             var numberOfRows = bannerImportSheet.getMaxRows() - 1;
             var range = bannerImportSheet.getRange(2, 1, numberOfRows, 5);
 
             if (numberOfRows > 0) {
-              var bannerSheet = SpreadsheetApp.getActive().getSheetByName(NAME_OF_LOG_HISTORIES[i]);
+              var bannerSheet = SpreadsheetApp.getActive().getSheetByName(availableSheets[i]);
 
               if (bannerSheet) {
                 bannerSheet.getRange(2, 1, numberOfRows, 5).setValues(range.getValues());
 
-                dashboardSheet.getRange(LOG_RANGES[NAME_OF_LOG_HISTORIES[i]]['range_dashboard_length']).setValue(numberOfRows);
+                dashboardSheet.getRange(LOG_RANGES[availableSheets[i]]['range_dashboard_length']).setValue(numberOfRows);
                 settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryDoneStatus);
               } else {
                 settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryMissingStatus);
