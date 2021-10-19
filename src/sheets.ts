@@ -3,12 +3,13 @@
 var dashboardEditRange = [
   "I5", // Status cell
   "AB28", // Document Version
-  "AT40", // Current Document Version
+  "AT41", // Current Document Version
   "T29", // Document Status
   "AV1", // Name of drop down 1 (import)
   "AV2", // Name of drop down 2 (auto import)
   "AG14", // Selection
-  "AG18" // URL
+  "AG18", // URL
+  "AV3", // Name of drop down 3 (HoYoLAB)
 ];
 
 // Cells that needs refreshing
@@ -20,15 +21,20 @@ function importButtonScript() {
   var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   if (dashboardSheet && settingsSheet) {
     var userImportSelection = dashboardSheet.getRange(dashboardEditRange[4]).getValue();
+    var userAutoImportSelection = dashboardSheet.getRange(dashboardEditRange[5]).getValue();
     var importSelectionText = dashboardSheet.getRange(dashboardEditRange[6]).getValue();
     var urlInput = dashboardSheet.getRange(dashboardEditRange[7]).getValue();
     dashboardSheet.getRange(dashboardEditRange[7]).setValue(""); //Clear input
     if (userImportSelection == importSelectionText) {
       settingsSheet.getRange("D6").setValue(urlInput);
       importDataManagement();
-    } else {
+    } else if (userAutoImportSelection == importSelectionText) {
       settingsSheet.getRange("D17").setValue(urlInput);
       importFromAPI();
+    } else {
+      settingsSheet.getRange("D31").setValue(urlInput);
+      ltokenInput = urlInput;
+      importFromHoYoLAB();
     }
   } else {
     SpreadsheetApp.getActiveSpreadsheet().toast("Unable to find 'Dashboard' or 'Settings'", "Missing Sheets");
@@ -147,3 +153,6 @@ const moveToCrystalMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_CRYST
 const moveToResinLogSheet = () => moveToSheetByName(SHEET_NAME_RESIN_LOG);
 const moveToResinYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_RESIN_YEARLY_REPORT);
 const moveToResinMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_RESIN_MONTHLY_REPORT);
+const moveToMoraLogSheet = () => moveToSheetByName(SHEET_NAME_MORA_LOG);
+const moveToMoraYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_YEARLY_REPORT);
+const moveToMoraMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_MONTHLY_REPORT);
