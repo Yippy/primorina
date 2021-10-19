@@ -20,14 +20,22 @@ const KNOWN_DOMAIN_LIST = [
 
 const API_PARAM_AUTH_KEY = "authkey";
 const API_PARAM_LANG = "lang";
+const API_PARAM_REGION = "region";
 const API_PARAM_SIZE = "size";
 const API_END_ID = "end_id";
+const API_PARAM_CURRENT_PAGE = "current_page";
+const API_PARAM_MONTH = "month";
 
 const getDefaultQueryParams = () => new Map([
   ["authkey_ver", "1"],
   ["sign_type", "2"],
   ["auth_appid", "webview_gacha"],
   ["device_type", "pc"],
+]);
+
+const getDefaultQueryParamsForHoYoLab = () => new Map([
+  ["type", "2"],
+  ["uid", "1"],
 ]);
 
 interface LogEntry {
@@ -53,8 +61,45 @@ interface ApiResponse {
   data: LogData,
 }
 
+interface LogEntryHoYo {
+  time: string,
+  num: string,
+  action_id: string,
+  action: string,
+}
+
+interface LogDataHoYo {
+  optional_month: [],
+  current_page: string,
+  data_month: string,
+  region: string,
+  uid: string,
+  nickname: string,
+  list: LogEntryHoYo[],
+}
+
+interface ApiResponseHoYo {
+  retcode: number,
+  message: string,
+  data: LogDataHoYo,
+}
+
 function requestApiResponse(endpoint: string, params: Map<string, string>) {
-  const response: ApiResponse = JSON.parse(UrlFetchApp.fetch(getUrlWithParams(endpoint, params)).getContentText());
+  var url = getUrlWithParams(endpoint, params);
+
+  const response: ApiResponse = JSON.parse(UrlFetchApp.fetch(url).getContentText());
+  if (response.retcode !== 0) {
+    throw new Error(`api request failed with retcode "${response.retcode}", msg: "${response.message}"`);
+  }
+  return response;
+}
+
+function requestApiResponseHoYo(endpoint: string, params: Map<string, string>) {
+  var header = {"Cookie": 'ltoken='+ltokenInput+'; ltuid='+ltuidInput};
+  var opt2 = {"headers":header};
+  var url = getUrlWithParams(endpoint, params);
+
+  const response: ApiResponseHoYo = JSON.parse(UrlFetchApp.fetch(url ,opt2).getContentText());
   if (response.retcode !== 0) {
     throw new Error(`api request failed with retcode "${response.retcode}", msg: "${response.message}"`);
   }

@@ -18,8 +18,12 @@ const SHEET_NAME_RESIN_LOG = "Resin Log";
 const SHEET_NAME_RESIN_YEARLY_REPORT = "Resin Yearly Report";
 const SHEET_NAME_RESIN_MONTHLY_REPORT = "Resin Monthly Report";
 const SHEET_NAME_SETTINGS = "Settings";
+const SHEET_NAME_MORA_LOG = "Mora Log";
+const SHEET_NAME_MORA_YEARLY_REPORT = "Mora Yearly Report";
+const SHEET_NAME_MORA_MONTHLY_REPORT = "Mora Monthly Report";
 
 const NAME_OF_LOG_HISTORIES = [SHEET_NAME_PRIMOGEM_LOG, SHEET_NAME_CRYSTAL_LOG, SHEET_NAME_RESIN_LOG];
+const NAME_OF_LOG_HISTORIES_HOYOLAB = [SHEET_NAME_MORA_LOG];
 
 // sheet info
 interface ILogSheetInfo {
@@ -42,6 +46,11 @@ const RESIN_SHEET_INFO: ILogSheetInfo = {
   apiPath: "/ysulog/api/getResinLog",
 }
 
+const MORA_SHEET_INFO: ILogSheetInfo = {
+  sheetName: SHEET_NAME_MORA_LOG,
+  apiPath: "/event/ysledgeros/month_detail",
+}
+
 // locales
 const languageSettingsForImport = {
   "English": { "code": "en", "full_code": "en-us", "4_star": " (4-Star)", "5_star": " (5-Star)" },
@@ -59,9 +68,19 @@ const languageSettingsForImport = {
   "Russian": { "code": "ru", "full_code": "ru-ru", "4_star": " (4★)", "5_star": " (5★)" }
 };
 
+// region
+const regionSettingsForImport = {
+  "Europe": { "code": "os_euro" },
+  "Asia": { "code": "os_asia" },
+  "America": { "code": "os_usa" },
+  "TW HK MO": { "code": "os_cht" },
+  "China": { "code": "cn" },
+};
+
 interface Config {
   authKeyUrl: string,
   languageCode: string,
+  regionCode: string,
 }
 
 function getConfig(): Config {
@@ -69,5 +88,6 @@ function getConfig(): Config {
 
   const authKeyUrl: string = settingsSheet.getRange("D17").getValue();
   const languageCode: string = languageSettingsForImport[settingsSheet.getRange("B2").getValue()].full_code;
-  return { authKeyUrl, languageCode };
+  const regionCode: string = regionSettingsForImport[settingsSheet.getRange("B3").getValue()].code;
+  return { authKeyUrl, languageCode, regionCode };
 }
