@@ -132,7 +132,7 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
     if (previousLogCount) {
       for (const [index, entry] of entries.entries()) {
         if (isHoYoLAB) {
-          if (entry.time === lastLogDate) {
+          if (Date.parse(entry.time) === lastLogDate) {
             // found last time
             addLogsToNewRows(entries.slice(0, index));
             break goingThroughApiResponses;
