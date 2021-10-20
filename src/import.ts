@@ -100,7 +100,7 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
 
     if (entries.length === 0) {
       // reached the end of logs
-      if (previousLogCount) {
+      if (!isHoYoLAB && previousLogCount) {
         const userConfirm = SpreadsheetApp.getUi().alert(
           "Warning",
           `${logSheetInfo.sheetName} import could not match the last recorded entry; still import?\n`
