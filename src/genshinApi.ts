@@ -26,6 +26,10 @@ const API_END_ID = "end_id";
 const API_PARAM_CURRENT_PAGE = "current_page";
 const API_PARAM_MONTH = "month";
 
+interface Cookies {
+  [name: string]: string;
+}
+
 const getDefaultQueryParams = () => new Map([
   ["authkey_ver", "1"],
   ["sign_type", "2"],
@@ -84,26 +88,27 @@ interface ApiResponseHoYo {
   data: LogDataHoYo,
 }
 
-function requestApiResponse(endpoint: string, params: Map<string, string>) {
-  var url = getUrlWithParams(endpoint, params);
+function requestApiResponse(endpoint: string, params: Map<string, string>, cookies: Cookies = null) {
+  const url = getUrlWithParams(endpoint, params);
+  const fetchParams = {};
+  if (cookies) {
+    fetchParams["headers"] =
+      { "Cookie": Object.entries(cookies).map(keyValuePair => `${keyValuePair[0]}=${keyValuePair[1]}`).join("; ") };
+  }
 
-  const response: ApiResponse = JSON.parse(UrlFetchApp.fetch(url).getContentText());
+  Logger.log(fetchParams);
+
+  const response = JSON.parse(UrlFetchApp.fetch(url, fetchParams).getContentText());
   if (response.retcode !== 0) {
     throw new Error(`api request failed with retcode "${response.retcode}", msg: "${response.message}"`);
   }
+
   return response;
 }
 
 function requestApiResponseHoYo(endpoint: string, params: Map<string, string>) {
-  var header = {"Cookie": 'ltoken='+ltokenInput+'; ltuid='+ltuidInput};
-  var opt2 = {"headers":header};
-  var url = getUrlWithParams(endpoint, params);
-
-  const response: ApiResponseHoYo = JSON.parse(UrlFetchApp.fetch(url ,opt2).getContentText());
-  if (response.retcode !== 0) {
-    throw new Error(`api request failed with retcode "${response.retcode}", msg: "${response.message}"`);
-  }
-  return response;
+  const cookie: Cookies = { ltoken: ltokenInput, ltuid: ltuidInput };
+  return requestApiResponse(endpoint, params, cookie) as ApiResponseHoYo;
 }
 
 function getReasonMap(config = getConfig()) {

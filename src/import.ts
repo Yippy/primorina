@@ -280,7 +280,7 @@ function importFromHoYoLAB() {
 }
 
 function isHoYoIdCorrect(userInput: string) {
-  const isValid = false;
+  let isValid = false;
   if (userInput.match(/^[0-9]+$/) != null) {
     isValid = true;
   }
