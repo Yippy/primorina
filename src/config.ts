@@ -70,11 +70,12 @@ const languageSettingsForImport = {
 
 // region
 const regionSettingsForImport = {
+  "天空岛": { "code": "cn_gf01" },
+  "世界树": { "code": "cn_qd01" },
+  "America": { "code": "os_usa" },
   "Europe": { "code": "os_euro" },
   "Asia": { "code": "os_asia" },
-  "America": { "code": "os_usa" },
-  "TW HK MO": { "code": "os_cht" },
-  "China": { "code": "cn" },
+  "TW, HK, MO": { "code": "os_cht" },
 };
 
 interface Config {
