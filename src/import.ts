@@ -1,169 +1,134 @@
 // for license and source, visit https://github.com/3096/primorina
 
-function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
-  const config = getConfig();
-  const reasonMap = getReasonMap(config);
-  const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
-  const isHoYoLAB = logSheetInfo.sheetName == SHEET_NAME_MORA_LOG;
-  let authKey: string, serverDivide: ServerDivide;
-  if (isHoYoLAB) {
-    const serverSetting = settingsSheet.getRange("B3").getValue();
-    if (serverSetting == "China") {
-      serverDivide = "cn";
-    } else {
-      serverDivide = "os";
-    }
-  } else {
-    try {
-      authKey = getParamValueFromUrlQueryString(config.authKeyUrl, API_PARAM_AUTH_KEY);
-      serverDivide = getServerDivideFromUrl(config.authKeyUrl);
-    } catch (err) {
-      SpreadsheetApp.getActiveSpreadsheet().toast(`Invalid Auth Key URL: ${err}`, "Error");
-      settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("No URL");
-      return;
-    }
-  }
-  const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
+function getRowProperties(header: string[], row: string[] | null, props: string[]) {
+  if (!row) return [...Array(props.length).fill(null)];
+  return props.map(prop => {
+    const idx = header.indexOf(prop);
+    return idx >= 0 ? row[idx] : null;
+  });
+}
 
-  const params;
-  var currentPage;
-  var selectedMonth;
-  if (isHoYoLAB) {
-    params = getDefaultQueryParamsForHoYoLab();
-    params.set(API_PARAM_REGION, config.regionCode);
-    params.set(API_PARAM_LANG, config.languageCode);
-    currentPage = 0;
-    params.set(API_PARAM_CURRENT_PAGE, currentPage);
-  } else {
-    params = getDefaultQueryParams();
-    params.set(API_PARAM_AUTH_KEY, authKey);
-    params.set(API_PARAM_LANG, config.languageCode);
-    params.set(API_PARAM_SIZE, "20");
+interface SpecialColProcs {
+  [specialProp: string]: (entry: any) => string;
+}
+
+function addEntriesToRows(
+  entries: any[], headerRow: string[], rows: string[][], lastLogTime: number | null,
+  stoppingMatch: (entry: any) => boolean, specialColProcs: SpecialColProcs = null)
+  : boolean  // returns if stopping match was hit
+{
+  for (const entry of entries) {
+    const newRow = [];
+    for (const col of headerRow) {
+      if (lastLogTime) {
+        // check time
+        if (Date.parse(entry.time) < lastLogTime) {
+          throw Error("imported date reached past last entry, check if account/server correct?\n"
+            + `cur entry ${JSON.stringify(entry)}, last entry time: ${(new Date(lastLogTime)).toString()}`);
+        }
+
+        // check for stopping early
+        if (stoppingMatch(entry)) return true;
+      }
+
+      if (specialColProcs && specialColProcs.hasOwnProperty(col)) {
+        newRow.push(specialColProcs[col](entry));
+        continue;
+      }
+
+      if (entry.hasOwnProperty(col)) {
+        newRow.push(entry[col]);
+        continue;
+      }
+
+      newRow.push("");
+    }
+
+    rows.push(newRow);
   }
+
+  return false;
+}
+
+function warnLogsNotMatched(logSheetInfo: ILogSheetInfo, settingsSheet: GoogleAppsScript.Spreadsheet.Sheet) {
+  const userConfirm = SpreadsheetApp.getUi().alert(
+    "Warning",
+    `${logSheetInfo.sheetName} import could not match the last recorded entry; still import?\n`
+    + "(If you've recently imported to this log, the account is likely wrong.)",
+    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+  if (userConfirm !== SpreadsheetApp.getUi().Button.OK) {
+    settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Cancelled");
+    return false;
+  }
+  return true;
+}
+
+function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
+  const config = getConfig();
+  const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   const logSheet = SpreadsheetApp.getActive().getSheetByName(logSheetInfo.sheetName);
   const curValues = logSheet.getDataRange().getValues();
+  const logHeaderRow = curValues[0];
   const previousLogCount = curValues.length - 1;
 
-  const LOG_HEADER_ROW = curValues[0];
-  const ID_INDEX = LOG_HEADER_ROW.indexOf("id");
-  const TIME_INDEX = LOG_HEADER_ROW.indexOf("time");
+  const reasonMap = getReasonMap(config);
+  let authKey: string, serverDivide: ServerDivide;
+  try {
+    authKey = getParamValueFromUrlQueryString(config.authKeyUrl, API_PARAM_AUTH_KEY);
+    serverDivide = getServerDivideFromUrl(config.authKeyUrl);
+  } catch (err) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(`Invalid Auth Key URL: ${err}`, "Error");
+    settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("No URL");
+    return;
+  }
 
-  const stopAtId: string = previousLogCount ? curValues[1][ID_INDEX] : null;
-  const lastLogDate: number = previousLogCount ? Date.parse(curValues[1][TIME_INDEX]) : null;
+  let lastLogId: string = null;
+  let lastLogDate: number = null;
+  if (previousLogCount) {
+    const [lastLogIdStr, lastLogDateStr] = getRowProperties(logHeaderRow, curValues[1], ["id", "time"]);
+    lastLogId = lastLogIdStr;
+    lastLogDate = Date.parse(lastLogDateStr);
+  }
 
+  const params = getDefaultQueryParams();
+  params.set(API_PARAM_AUTH_KEY, authKey);
+  params.set(API_PARAM_LANG, config.languageCode);
+  params.set(API_PARAM_SIZE, "20");
+
+  const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
   const newRows = [];
-  const addLogsToNewRows = (newLogs: LogEntry[]) => {
-    for (const log of newLogs) {
-      const newRow = [];
-      for (const col of LOG_HEADER_ROW) {
-        // handle special cols first
-        switch (col) {
-          case "date":
-            newRow.push(log.time);
-            continue;
-          case "detail":
-            const reasonId = parseInt(log.reason);
-            newRow.push(reasonMap.get(reasonId));
-            continue;
-        }
+  let matchedLastLog = false;
 
-        if (log.hasOwnProperty(col)) {
-          newRow.push(log[col]);
-          continue;
-        }
-
-        newRow.push("");
-      }
-
-      newRows.push(newRow);
-    }
-  };
-
-  goingThroughApiResponses:
   while (true) {
-    var entries;
-    if (isHoYoLAB) {
-      currentPage++;
-      params.set(API_PARAM_CURRENT_PAGE, currentPage);
-      try {
-        const responseHoYo: ApiResponseHoYo = requestApiResponseHoYo(endpoint, params);
-        entries = responseHoYo.data.list;
-      } catch (err) {
-        SpreadsheetApp.getActiveSpreadsheet().toast(`Invalid HoYoLAB ltoken or UID: ${err}`, "Error");
-        settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Invalid HoYoLAB ltoken or UID");
-        return;
-      }
-    } else {
-      const response: ApiResponse = requestApiResponse(endpoint, params);
-      entries = response.data.list;
-    }
+    const response: imServiceApiResponse = requestApiResponse(endpoint, params);
+    const entries = response.data.list;
 
     if (entries.length === 0) {
       // reached the end of logs
-      if (!isHoYoLAB && previousLogCount) {
-        const userConfirm = SpreadsheetApp.getUi().alert(
-          "Warning",
-          `${logSheetInfo.sheetName} import could not match the last recorded entry; still import?\n`
-          + "(If you've recently imported to this log, something is likely wrong.)",
-          SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
-        if (userConfirm !== SpreadsheetApp.getUi().Button.OK) {
-          settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Cancelled");
-          return;
-        }
-      }
-      if (isHoYoLAB) {
-        if (selectedMonth == null) {
-          selectedMonth = responseHoYo.data.data_month;
-        } else {
-          selectedMonth--;
-        }
-        if (responseHoYo.data.optional_month.indexOf(selectedMonth) > -1) {
-          currentPage = 0;
-          params.set(API_PARAM_MONTH, selectedMonth);
-        } else {
-          break;
-        }
-      } else {
-        break;
-      }
+      break;
     }
 
-    // check response agaist last log
-    if (previousLogCount) {
-      for (const [index, entry] of entries.entries()) {
-        if (isHoYoLAB) {
-          if (Date.parse(entry.time) === lastLogDate) {
-            // found last time
-            addLogsToNewRows(entries.slice(0, index));
-            break goingThroughApiResponses;
-          }
-        } else {
-          if (entry.id === stopAtId) {
-            // found last id
-            addLogsToNewRows(entries.slice(0, index));
-            break goingThroughApiResponses;
-          }
-        }
-
-        if (Date.parse(entry.time) < lastLogDate) {
-          // found unexpected datetime
-          const errMsg = "imported date reached past last entry, check if account correct?\n"
-            + `cur entry ${JSON.stringify(entry)}, last entry ${JSON.stringify(curValues[1])}`;
-          settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue(errMsg);
-          throw Error(errMsg);
-        }
+    const stoppingMatched = addEntriesToRows(entries, logHeaderRow, newRows, lastLogDate,
+      (entry: imServiceLogEntry) => entry.id === lastLogId,
+      {
+        "detail": (entry: imServiceLogEntry) => reasonMap.get(parseInt(entry.reason))
       }
+    );
+    if (stoppingMatched) {
+      matchedLastLog = true;
+      break;
     }
 
-    addLogsToNewRows(entries);
-    if (!isHoYoLAB) {
-      params.set(API_END_ID, entries[entries.length - 1].id);
-    }
+    params.set(API_END_ID, entries[entries.length - 1].id);
+  }
+
+  if (previousLogCount && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
+    return;
   }
 
   const finalRows = newRows.concat(curValues.slice(1));
   if (newRows.length > 0) {
-    logSheet.getRange(2, 1, finalRows.length, LOG_HEADER_ROW.length).setValues(finalRows);
+    logSheet.getRange(2, 1, finalRows.length, logHeaderRow.length).setValues(finalRows);
   }
 
   const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
@@ -171,10 +136,86 @@ function writeLogToSheet(logSheetInfo: ILogSheetInfo) {
   settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
 }
 
-const getPrimogemLog = () => writeLogToSheet(PRIMOGEM_SHEET_INFO);
-const getCrystalLog = () => writeLogToSheet(CRYSTAL_SHEET_INFO);
-const getResinLog = () => writeLogToSheet(RESIN_SHEET_INFO);
-const getMoraLog = () => writeLogToSheet(MORA_SHEET_INFO);
+function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
+  const config = getConfig();
+  const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
+  const logSheet = SpreadsheetApp.getActive().getSheetByName(logSheetInfo.sheetName);
+  const curValues = logSheet.getDataRange().getValues();
+  const logHeaderRow = curValues[0];
+  const previousLogCount = curValues.length - 1;
+
+  const cookies: Cookies = { ltoken: ltokenInput, ltuid: ltuidInput };
+  const serverDivide: ServerDivide = REGION_SERVER_DIVIDE[config.regionCode];
+
+  let lastImportedLogTime: number = null;
+  let lastImportedLogNum: number = null;
+  let lastImportedLogAction: number = null;
+  if (previousLogCount) {
+    const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
+      = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
+    lastImportedLogTime = Date.parse(lastImportedLogTimeStr);
+    lastImportedLogNum = parseInt(lastImportedLogNumStr);
+    lastImportedLogAction = lastImportedLogActionStr;
+  }
+
+  const params = getDefaultQueryParamsForHoYoLab();
+  params.set(API_PARAM_REGION, config.regionCode);
+  params.set(API_PARAM_LANG, config.languageCode);
+
+  const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
+  const newRows = [];
+  let matchedLastLog = false;
+  const months = requestApiResponse(endpoint, params, cookies).data.optional_month;
+
+  goingThroughAllMonths:
+  for (const curMonth of months.reverse()) {
+    let currentPage = 1;
+    while (true) {
+      params.set(API_PARAM_CURRENT_PAGE, currentPage.toString());
+      params.set(API_PARAM_MONTH, curMonth.toString());
+      const response = requestApiResponse(endpoint, params, cookies);
+      const entries = response.data.list;
+
+      if (entries.length === 0) {
+        // reached the end of current month logs
+        break;
+      }
+
+      const stoppingMatched = addEntriesToRows(entries, logHeaderRow, newRows, lastImportedLogTime,
+        (entry: LogEntryHoYo) => {
+          const { time, num, action_id } = entry;
+          return Date.parse(time) === lastImportedLogTime
+            && num === lastImportedLogNum
+            && action_id === lastImportedLogAction;
+        }
+      );
+      if (stoppingMatched) {
+        matchedLastLog = true;
+        break goingThroughAllMonths;
+      }
+
+      currentPage++;
+    }
+  }
+
+  if (previousLogCount && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
+    return;
+  }
+
+  const finalRows = newRows.concat(curValues.slice(1));
+  if (newRows.length > 0) {
+    logSheet.getRange(2, 1, finalRows.length, logHeaderRow.length).setValues(finalRows);
+  }
+
+  const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
+  dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(finalRows.length);
+  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
+}
+
+const getPrimogemLog = () => writeImServiceLogToSheet(PRIMOGEM_SHEET_INFO);
+const getCrystalLog = () => writeImServiceLogToSheet(CRYSTAL_SHEET_INFO);
+const getResinLog = () => writeImServiceLogToSheet(RESIN_SHEET_INFO);
+const getMoraLog = () => writeLedgerLogToSheet(MORA_SHEET_INFO);
 
 const LOG_RANGES = {
   "Primogem Log": { "range_status": "E26", "range_toggle": "E19", "range_dashboard_length": "C15" },
@@ -250,7 +291,7 @@ function importFromHoYoLAB() {
         if (logName == SHEET_NAME_MORA_LOG) {
           ltuidInput = settingsSheet.getRange("D33").getValue();
           if (ltuidInput.length == 0) {
-            const result = displayUserPrompt("Auto Import with HoYoLab",`Enter HoYoLAB UID to proceed\n.`);
+            const result = displayUserPrompt("Auto Import with HoYoLab", `Enter HoYoLAB UID to proceed\n.`);
             var button = result.getSelectedButton();
             if (button == SpreadsheetApp.getUi().Button.OK) {
               ltuidInput = result.getResponseText();
@@ -292,6 +333,6 @@ function displayUserPrompt(titlePrompt: string, messagePrompt: string) {
   var result = ui.prompt(
     titlePrompt,
     messagePrompt,
-  SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
   return result;
 }

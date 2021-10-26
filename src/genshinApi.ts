@@ -18,6 +18,15 @@ const KNOWN_DOMAIN_LIST = [
   { domain: "hk4e-api-os.mihoyo.com", serverDivide: "os" },
 ];
 
+const REGION_SERVER_DIVIDE = {
+  "cn_gf01": "cn",  // 天空岛
+  "cn_qd01": "cn",  // 世界树
+  "os_usa": "os",   // America
+  "os_euro": "os",  // Europe
+  "os_asia": "os",  // Asia
+  "os_cht": "os",   // TW, HK, MO
+}
+
 const API_PARAM_AUTH_KEY = "authkey";
 const API_PARAM_LANG = "lang";
 const API_PARAM_REGION = "region";
@@ -42,7 +51,7 @@ const getDefaultQueryParamsForHoYoLab = () => new Map([
   ["uid", "1"],
 ]);
 
-interface LogEntry {
+interface imServiceLogEntry {
   id: string,
   uid: string,
   time: string,
@@ -50,30 +59,30 @@ interface LogEntry {
   reason: string,
 }
 
-interface LogData {
+interface imServiceLogData {
   end_id: string,
   size: string,
   region: string,
   uid: string,
   nickname: string,
-  list: LogEntry[],
+  list: imServiceLogEntry[],
 }
 
-interface ApiResponse {
+interface imServiceApiResponse {
   retcode: number,
   message: string,
-  data: LogData,
+  data: imServiceLogData,
 }
 
 interface LogEntryHoYo {
   time: string,
-  num: string,
-  action_id: string,
+  num: number,
+  action_id: number,
   action: string,
 }
 
 interface LogDataHoYo {
-  optional_month: [],
+  optional_month: number[],
   current_page: string,
   data_month: string,
   region: string,
@@ -96,19 +105,12 @@ function requestApiResponse(endpoint: string, params: Map<string, string>, cooki
       { "Cookie": Object.entries(cookies).map(keyValuePair => `${keyValuePair[0]}=${keyValuePair[1]}`).join("; ") };
   }
 
-  Logger.log(fetchParams);
-
   const response = JSON.parse(UrlFetchApp.fetch(url, fetchParams).getContentText());
   if (response.retcode !== 0) {
     throw new Error(`api request failed with retcode "${response.retcode}", msg: "${response.message}"`);
   }
 
   return response;
-}
-
-function requestApiResponseHoYo(endpoint: string, params: Map<string, string>) {
-  const cookie: Cookies = { ltoken: ltokenInput, ltuid: ltuidInput };
-  return requestApiResponse(endpoint, params, cookie) as ApiResponseHoYo;
 }
 
 function getReasonMap(config = getConfig()) {
