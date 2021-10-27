@@ -90,7 +90,7 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
     lastLogDate = Date.parse(lastLogDateStr);
   }
 
-  const params = getDefaultQueryParams();
+  const params = getImServiceDefaultQueryParams();
   params.set(API_PARAM_AUTH_KEY, authKey);
   params.set(API_PARAM_LANG, config.languageCode);
   params.set(API_PARAM_SIZE, "20");
@@ -100,7 +100,7 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
   let matchedLastLog = false;
 
   while (true) {
-    const response: imServiceApiResponse = requestApiResponse(endpoint, params);
+    const response: ImServiceApiResponse = requestApiResponse(endpoint, params);
     const entries = response.data.list;
 
     if (entries.length === 0) {
@@ -109,9 +109,9 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
 
     const stoppingMatched = addEntriesToRows(entries, logHeaderRow, newRows, lastLogDate,
-      (entry: imServiceLogEntry) => entry.id === lastLogId,
+      (entry: ImServiceLogEntry) => entry.id === lastLogId,
       {
-        "detail": (entry: imServiceLogEntry) => reasonMap.get(parseInt(entry.reason))
+        "detail": (entry: ImServiceLogEntry) => reasonMap.get(parseInt(entry.reason))
       }
     );
     if (stoppingMatched) {
@@ -133,39 +133,91 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(finalRows.length);
-  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
+  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + newRows.length);
 }
 
 function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
+  const COMPARING_PROPS = ["time", "num", "action_id"];
+  const isSameRowValue = (row0: string[], row1: string[]) => {
+    const props0 = getRowProperties(logHeaderRow, row0, COMPARING_PROPS);
+    const props1 = getRowProperties(logHeaderRow, row1, COMPARING_PROPS);
+    return props0.every((value, idx) => value === props1[idx]);
+  };
+
   const config = getConfig();
   const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   const logSheet = SpreadsheetApp.getActive().getSheetByName(logSheetInfo.sheetName);
-  const curValues = logSheet.getDataRange().getValues();
+
+  let curValues = logSheet.getDataRange().getValues();
   const logHeaderRow = curValues[0];
-  const previousLogCount = curValues.length - 1;
 
   const cookies: Cookies = { ltoken: ltokenInput, ltuid: ltuidInput };
-  const serverDivide: ServerDivide = REGION_SERVER_DIVIDE[config.regionCode];
+  const serverDivide = REGION_INFO[config.regionCode].serverDivide;
 
-  let lastImportedLogTime: number = null;
-  let lastImportedLogNum: number = null;
-  let lastImportedLogAction: number = null;
-  if (previousLogCount) {
-    const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
-      = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
-    lastImportedLogTime = Date.parse(lastImportedLogTimeStr);
-    lastImportedLogNum = parseInt(lastImportedLogNumStr);
-    lastImportedLogAction = lastImportedLogActionStr;
-  }
-
-  const params = getDefaultQueryParamsForHoYoLab();
+  const params = getLedgerDefaultQueryParams();
   params.set(API_PARAM_REGION, config.regionCode);
   params.set(API_PARAM_LANG, config.languageCode);
 
   const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
+  const curYear = getServerTimeAsUtcNow(config.regionCode).getUTCFullYear();
+  const months = (requestApiResponse(endpoint, params, cookies) as LedgerApiResponse).data.optional_month;
+  if (months.length === 0) {
+    throw Error(`account has no history for ${logSheetInfo.sheetName}`);
+  }
+  const monthsWithYear =
+    months.map(month => `${month <= months[months.length - 1] ? curYear : curYear - 1}-${month}`);
+
+  let hasPreviousLogInRange = true;
+
+  // trim previous log last value
+  let trimToRowIdx = 1;
+  if (trimToRowIdx < curValues.length) {
+    const isInLogRange = (row: string[]) => {
+      const [timeStr] = getRowProperties(logHeaderRow, row, ["time"]);
+      const apiTimeAsUtc = getApiTimeAsServerTimeAsUtc(timeStr);
+      Logger.log(apiTimeAsUtc.toUTCString());
+      Logger.log(apiTimeAsUtc.getTime().toString());
+      Logger.log(JSON.stringify(monthsWithYear));
+      Logger.log(`${apiTimeAsUtc.getUTCFullYear()}-${apiTimeAsUtc.getUTCMonth()}`);
+      // having getMonth start at Jan = 0 is the stupidest thing ive ever seen
+      return monthsWithYear.includes(`${apiTimeAsUtc.getUTCFullYear()}-${apiTimeAsUtc.getUTCMonth() + 1}`);
+    }
+
+    if (!isInLogRange(curValues[trimToRowIdx])) {
+      hasPreviousLogInRange = false;
+      Logger.log("bruh? not in range?");
+
+    } else {
+      do {
+        trimToRowIdx++;
+        if (trimToRowIdx >= curValues.length || !isInLogRange(curValues[trimToRowIdx])) {
+          hasPreviousLogInRange = false;
+          Logger.log("bruh? mid");
+          break;
+        }
+
+      } while (isSameRowValue(curValues[trimToRowIdx], curValues[trimToRowIdx - 1]))
+
+      curValues = [logHeaderRow, ...curValues.slice(trimToRowIdx)];
+    }
+  } else {
+    hasPreviousLogInRange = false;
+    Logger.log("bruh? no log");
+  }
+
+  let lastImportedLogTime: number = null;
+  let lastImportedLogNum: number = null;
+  let lastImportedLogAction: number = null;
+  if (hasPreviousLogInRange) {
+    const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
+      = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
+    lastImportedLogTime = Date.parse(lastImportedLogTimeStr);
+    lastImportedLogNum = parseInt(lastImportedLogNumStr);
+    lastImportedLogAction = parseInt(lastImportedLogActionStr);
+  }
+
   const newRows = [];
   let matchedLastLog = false;
-  const months = requestApiResponse(endpoint, params, cookies).data.optional_month;
 
   goingThroughAllMonths:
   for (const curMonth of months.reverse()) {
@@ -173,7 +225,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     while (true) {
       params.set(API_PARAM_CURRENT_PAGE, currentPage.toString());
       params.set(API_PARAM_MONTH, curMonth.toString());
-      const response = requestApiResponse(endpoint, params, cookies);
+      const response: LedgerApiResponse = requestApiResponse(endpoint, params, cookies);
       const entries = response.data.list;
 
       if (entries.length === 0) {
@@ -182,7 +234,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
       }
 
       const stoppingMatched = addEntriesToRows(entries, logHeaderRow, newRows, lastImportedLogTime,
-        (entry: LogEntryHoYo) => {
+        (entry: LedgerLogEntry) => {
           const { time, num, action_id } = entry;
           return Date.parse(time) === lastImportedLogTime
             && num === lastImportedLogNum
@@ -198,7 +250,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
   }
 
-  if (previousLogCount && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
+  if (hasPreviousLogInRange && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
     return;
   }
 
@@ -209,7 +261,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(finalRows.length);
-  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
+  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + newRows.length);
 }
 
 const getPrimogemLog = () => writeImServiceLogToSheet(PRIMOGEM_SHEET_INFO);

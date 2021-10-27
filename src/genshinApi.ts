@@ -1,6 +1,7 @@
 // for license and source, visit https://github.com/3096/primorina
 
 type ServerDivide = "cn" | "os";
+type RegionCode = "cn_gf01" | "cn_qd01" | "os_usa" | "os_euro" | "os_asia" | "os_cht";
 
 const API_DOMAINS_BY_SERVER_DIVIDE = {
   cn: "hk4e-api.mihoyo.com",
@@ -18,13 +19,15 @@ const KNOWN_DOMAIN_LIST = [
   { domain: "hk4e-api-os.mihoyo.com", serverDivide: "os" },
 ];
 
-const REGION_SERVER_DIVIDE = {
-  "cn_gf01": "cn",  // 天空岛
-  "cn_qd01": "cn",  // 世界树
-  "os_usa": "os",   // America
-  "os_euro": "os",  // Europe
-  "os_asia": "os",  // Asia
-  "os_cht": "os",   // TW, HK, MO
+const REGION_INFO: {
+  [regionCode in RegionCode]: { serverDivide: ServerDivide, timezone: number }
+} = {
+  "cn_gf01": { serverDivide: "cn", timezone: +8, },  // 天空岛
+  "cn_qd01": { serverDivide: "cn", timezone: +8, },  // 世界树
+  "os_usa": { serverDivide: "os", timezone: -5, },  // America
+  "os_euro": { serverDivide: "os", timezone: +1, },  // Europe
+  "os_asia": { serverDivide: "os", timezone: +8, },  // Asia
+  "os_cht": { serverDivide: "os", timezone: +8, },  // TW, HK, MO
 }
 
 const API_PARAM_AUTH_KEY = "authkey";
@@ -39,19 +42,19 @@ interface Cookies {
   [name: string]: string;
 }
 
-const getDefaultQueryParams = () => new Map([
+const getImServiceDefaultQueryParams = () => new Map([
   ["authkey_ver", "1"],
   ["sign_type", "2"],
   ["auth_appid", "webview_gacha"],
   ["device_type", "pc"],
 ]);
 
-const getDefaultQueryParamsForHoYoLab = () => new Map([
+const getLedgerDefaultQueryParams = () => new Map([
   ["type", "2"],
   ["uid", "1"],
 ]);
 
-interface imServiceLogEntry {
+interface ImServiceLogEntry {
   id: string,
   uid: string,
   time: string,
@@ -59,42 +62,42 @@ interface imServiceLogEntry {
   reason: string,
 }
 
-interface imServiceLogData {
+interface ImServiceLogData {
   end_id: string,
   size: string,
   region: string,
   uid: string,
   nickname: string,
-  list: imServiceLogEntry[],
+  list: ImServiceLogEntry[],
 }
 
-interface imServiceApiResponse {
+interface ImServiceApiResponse {
   retcode: number,
   message: string,
-  data: imServiceLogData,
+  data: ImServiceLogData,
 }
 
-interface LogEntryHoYo {
+interface LedgerLogEntry {
   time: string,
   num: number,
   action_id: number,
   action: string,
 }
 
-interface LogDataHoYo {
+interface LedgerLogData {
   optional_month: number[],
   current_page: string,
   data_month: string,
   region: string,
   uid: string,
   nickname: string,
-  list: LogEntryHoYo[],
+  list: LedgerLogEntry[],
 }
 
-interface ApiResponseHoYo {
+interface LedgerApiResponse {
   retcode: number,
   message: string,
-  data: LogDataHoYo,
+  data: LedgerLogData,
 }
 
 function requestApiResponse(endpoint: string, params: Map<string, string>, cookies: Cookies = null) {
@@ -130,7 +133,7 @@ function getReasonMap(config = getConfig()) {
 }
 
 function getApiEndpoint(logSheetInfo: ILogSheetInfo, serverDivide: ServerDivide) {
-  return "https://" + API_DOMAINS_BY_SERVER_DIVIDE[serverDivide] + logSheetInfo.apiPath;
+  return "https://" + API_DOMAINS_BY_SERVER_DIVIDE[serverDivide] + logSheetInfo.apiPaths[serverDivide];
 }
 
 function getServerDivideFromUrl(url: string) {
@@ -169,4 +172,13 @@ function getUrlWithParams(urlEndpoint: string, params: Map<string, string>) {
     }
   }
   return result.slice(0, -1);
+}
+
+function getServerTimeAsUtcNow(regionCode: RegionCode) {
+  return new Date(Date.now() + REGION_INFO[regionCode].timezone * 3600000);
+}
+
+// "YYYY-MM-DD HH:MM:SS"
+function getApiTimeAsServerTimeAsUtc(apiTimeStr: string) {
+  return new Date(apiTimeStr.replace(" ", "T") + "Z");
 }

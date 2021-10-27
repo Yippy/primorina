@@ -28,27 +28,39 @@ const NAME_OF_LOG_HISTORIES_HOYOLAB = [SHEET_NAME_MORA_LOG];
 // sheet info
 interface ILogSheetInfo {
   sheetName: string,
-  apiPath: string
+  apiPaths: { [serverDivide in ServerDivide]: string }
 }
 
 const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_PRIMOGEM_LOG,
-  apiPath: "/ysulog/api/getPrimogemLog",
+  apiPaths: {
+    cn: "/ysulog/api/getPrimogemLog",
+    os: "/ysulog/api/getPrimogemLog",
+  }
 }
 
 const CRYSTAL_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_CRYSTAL_LOG,
-  apiPath: "/ysulog/api/getCrystalLog",
+  apiPaths: {
+    cn: "/ysulog/api/getCrystalLog",
+    os: "/ysulog/api/getCrystalLog",
+  }
 }
 
 const RESIN_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_RESIN_LOG,
-  apiPath: "/ysulog/api/getResinLog",
+  apiPaths: {
+    cn: "/ysulog/api/getResinLog",
+    os: "/ysulog/api/getResinLog",
+  }
 }
 
 const MORA_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_MORA_LOG,
-  apiPath: "/event/ysledgeros/month_detail",
+  apiPaths: {
+    cn: "/event/ys_ledger/monthDetail",
+    os: "/event/ysledgeros/month_detail",
+  }
 }
 
 // locales
@@ -69,7 +81,9 @@ const languageSettingsForImport = {
 };
 
 // region
-const regionSettingsForImport = {
+const regionSettingsForImport: {
+  [displayStr: string]: { code: RegionCode }
+} = {
   "天空岛": { "code": "cn_gf01" },
   "世界树": { "code": "cn_qd01" },
   "America": { "code": "os_usa" },
@@ -81,7 +95,7 @@ const regionSettingsForImport = {
 interface Config {
   authKeyUrl: string,
   languageCode: string,
-  regionCode: string,
+  regionCode: RegionCode,
 }
 
 function getConfig(): Config {
@@ -89,6 +103,6 @@ function getConfig(): Config {
 
   const authKeyUrl: string = settingsSheet.getRange("D17").getValue();
   const languageCode: string = languageSettingsForImport[settingsSheet.getRange("B2").getValue()].full_code;
-  const regionCode: string = regionSettingsForImport[settingsSheet.getRange("B3").getValue()].code;
+  const regionCode: RegionCode = regionSettingsForImport[settingsSheet.getRange("B3").getValue()].code;
   return { authKeyUrl, languageCode, regionCode };
 }
