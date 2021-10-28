@@ -17,8 +17,8 @@ var dashboardRefreshRange = [
 ];
 
 function importButtonScript() {
+  var settingsSheet = getSettingsSheet();
   var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   if (dashboardSheet && settingsSheet) {
     var userImportSelection = dashboardSheet.getRange(dashboardEditRange[4]).getValue();
     var userAutoImportSelection = dashboardSheet.getRange(dashboardEditRange[5]).getValue();

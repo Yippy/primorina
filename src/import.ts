@@ -280,7 +280,7 @@ const ltokenInput: string;
 const ltuidInput: string;
 
 function importFromAPI() {
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
+  var settingsSheet = getSettingsSheet();
   settingsSheet.getRange("E24").setValue(new Date());
   settingsSheet.getRange("E25").setValue("");
 
@@ -321,7 +321,7 @@ function importFromAPI() {
 }
 
 function importFromHoYoLAB() {
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
+  var settingsSheet = getSettingsSheet();
   settingsSheet.getRange("E37").setValue(new Date());
   settingsSheet.getRange("E38").setValue("");
   var logName;

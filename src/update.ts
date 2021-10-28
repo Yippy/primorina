@@ -1,7 +1,7 @@
 // for license and source, visit https://github.com/3096/primorina
 
 function reorderSheets() {
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
+  var settingsSheet = getSettingsSheet();
   if (settingsSheet) {
     var sheetsToSort = settingsSheet.getRange(11, 2, 17, 1).getValues();
     Logger.log(sheetsToSort);
@@ -24,8 +24,8 @@ function reorderSheets() {
 }
 
 function quickUpdate() {
+  var settingsSheet = getSettingsSheet();
   var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   if (dashboardSheet) {
     dashboardSheet.getRange(dashboardEditRange[0]).setValue("Quick Update: Running script, please wait.");
     dashboardSheet.getRange(dashboardEditRange[0]).setFontColor("yellow").setFontWeight("bold");
@@ -148,7 +148,7 @@ function quickUpdate() {
 }
 
 function importDataManagement() {
-  var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
+  var settingsSheet = getSettingsSheet();
   var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   var userImportInput = settingsSheet.getRange("D6").getValue();
   var userImportStatus = settingsSheet.getRange("E7").getValue();
@@ -247,6 +247,7 @@ function importDataManagement() {
 * Update Item List
 */
 function updateItemsList() {
+  var settingsSheet = getSettingsSheet();
   var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   var updateItemHasFailed = false;
   if (dashboardSheet) {
@@ -264,7 +265,6 @@ function updateItemsList() {
       if (SpreadsheetApp.getActive().getSheets().length == 1) {
         placeHolderSheet = SpreadsheetApp.getActive().insertSheet();
       }
-      var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
       if (settingsSheet) {
         var isLoading = settingsSheet.getRange(5, 7).getValue();
         if (isLoading) {
