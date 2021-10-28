@@ -150,6 +150,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   let curValues = logSheet.getDataRange().getValues();
   const logHeaderRow = curValues[0];
+  const previousLogCount = curValues.length - 1;
 
   const cookies: Cookies = { ltoken: ltokenInput, ltuid: ltuidInput };
   const serverDivide = REGION_INFO[config.regionCode].serverDivide;
@@ -175,24 +176,18 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     const isInLogRange = (row: string[]) => {
       const [timeStr] = getRowProperties(logHeaderRow, row, ["time"]);
       const apiTimeAsUtc = getApiTimeAsServerTimeAsUtc(timeStr);
-      Logger.log(apiTimeAsUtc.toUTCString());
-      Logger.log(apiTimeAsUtc.getTime().toString());
-      Logger.log(JSON.stringify(monthsWithYear));
-      Logger.log(`${apiTimeAsUtc.getUTCFullYear()}-${apiTimeAsUtc.getUTCMonth()}`);
       // having getMonth start at Jan = 0 is the stupidest thing ive ever seen
       return monthsWithYear.includes(`${apiTimeAsUtc.getUTCFullYear()}-${apiTimeAsUtc.getUTCMonth() + 1}`);
     }
 
     if (!isInLogRange(curValues[trimToRowIdx])) {
       hasPreviousLogInRange = false;
-      Logger.log("bruh? not in range?");
 
     } else {
       do {
         trimToRowIdx++;
         if (trimToRowIdx >= curValues.length || !isInLogRange(curValues[trimToRowIdx])) {
           hasPreviousLogInRange = false;
-          Logger.log("bruh? mid");
           break;
         }
 
@@ -202,7 +197,6 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
   } else {
     hasPreviousLogInRange = false;
-    Logger.log("bruh? no log");
   }
 
   let lastImportedLogTime: number = null;
@@ -261,7 +255,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(finalRows.length);
-  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + newRows.length);
+  settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
 }
 
 const getPrimogemLog = () => writeImServiceLogToSheet(PRIMOGEM_SHEET_INFO);
