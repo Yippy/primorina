@@ -202,12 +202,14 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   let lastImportedLogTime: number = null;
   let lastImportedLogNum: number = null;
   let lastImportedLogAction: number = null;
+  let lastImportedIsWithinOneWeek = false;
   if (hasPreviousLogInRange) {
     const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
       = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
     lastImportedLogTime = Date.parse(lastImportedLogTimeStr);
     lastImportedLogNum = parseInt(lastImportedLogNumStr);
     lastImportedLogAction = parseInt(lastImportedLogActionStr);
+    lastImportedIsWithinOneWeek = Date.now() - lastImportedLogTime < 1000 * 60 * 60 * 24 * 7;
   }
 
   const newRows = [];
@@ -227,7 +229,8 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   for (const curMonth of months.reverse()) {
     params.set(API_PARAM_MONTH, curMonth.toString());
 
-    let fetchedDataArray: LedgerLogData[] = [...Array(LEDGER_FETCH_MULTI).fill(null)];
+    let fetchedDataArray: LedgerLogData[] =
+      [...Array(lastImportedIsWithinOneWeek ? 2 : LEDGER_FETCH_MULTI).fill(null)];
     let processedUpToIdx = 0, foundEnd = false;
     while (true) {
       // popluate requests with responses not yet fetched
