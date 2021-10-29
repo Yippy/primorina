@@ -10,6 +10,7 @@ var dashboardEditRange = [
   "AG14", // Selection
   "AG18", // URL
   "AV3", // Name of drop down 3 (HoYoLAB)
+  "AG16", // Name of user input
 ];
 
 // Cells that needs refreshing
@@ -24,17 +25,33 @@ function importButtonScript() {
     var userAutoImportSelection = dashboardSheet.getRange(dashboardEditRange[5]).getValue();
     var importSelectionText = dashboardSheet.getRange(dashboardEditRange[6]).getValue();
     var urlInput = dashboardSheet.getRange(dashboardEditRange[7]).getValue();
-    dashboardSheet.getRange(dashboardEditRange[7]).setValue(""); //Clear input
-    if (userImportSelection == importSelectionText) {
-      settingsSheet.getRange("D6").setValue(urlInput);
-      importDataManagement();
-    } else if (userAutoImportSelection == importSelectionText) {
-      settingsSheet.getRange("D17").setValue(urlInput);
-      importFromAPI();
+    if (urlInput.length > 0) {
+      dashboardSheet.getRange(dashboardEditRange[7]).setValue(""); //Clear input
+      if (userImportSelection == importSelectionText) {
+        settingsSheet.getRange("D6").setValue(urlInput);
+        importDataManagement();
+      } else if (userAutoImportSelection == importSelectionText) {
+        settingsSheet.getRange("D17").setValue(urlInput);
+        importFromAPI();
+      } else {
+        settingsSheet.getRange("D31").setValue(urlInput);
+        ltokenInput = urlInput;
+        importFromHoYoLAB();
+      }
     } else {
-      settingsSheet.getRange("D31").setValue(urlInput);
-      ltokenInput = urlInput;
-      importFromHoYoLAB();
+      var userInputText = dashboardSheet.getRange(dashboardEditRange[9]).getValue();
+      const result = displayUserAlert(importSelectionText, 'The user input of "'+userInputText+`" is empty,\nwould you like to reuse previously stored data from settings?\n.`);
+      if (result == SpreadsheetApp.getUi().Button.OK) {
+        // User wants to reuse previously stored data
+        if (userImportSelection == importSelectionText) {
+          importDataManagement();
+        } else if (userAutoImportSelection == importSelectionText) {
+          importFromAPI();
+        } else {
+          ltokenInput = settingsSheet.getRange("D31").getValue();
+          importFromHoYoLAB();
+        }
+      }
     }
   } else {
     SpreadsheetApp.getActiveSpreadsheet().toast("Unable to find 'Dashboard' or 'Settings'", "Missing Sheets");

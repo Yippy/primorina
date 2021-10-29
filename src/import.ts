@@ -430,3 +430,12 @@ function displayUserPrompt(titlePrompt: string, messagePrompt: string) {
     SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
   return result;
 }
+
+function displayUserAlert(titleAlert: string, messageAlert: string) {
+  const ui = SpreadsheetApp.getUi();
+  var result = ui.alert(
+    titleAlert,
+    messageAlert,
+    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+  return result;
+}
