@@ -213,34 +213,82 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   const newRows = [];
   let matchedLastLog = false;
 
+  const processEntries = (entries: LedgerLogEntry[]) => addEntriesToRows(
+    entries, logHeaderRow, newRows, lastImportedLogTime,
+    (entry: LedgerLogEntry) => {
+      const { time, num, action_id } = entry;
+      return Date.parse(time) === lastImportedLogTime
+        && num === lastImportedLogNum
+        && action_id === lastImportedLogAction;
+    }
+  );
+
   goingThroughAllMonths:
   for (const curMonth of months.reverse()) {
-    let currentPage = 1;
+    params.set(API_PARAM_MONTH, curMonth.toString());
+
+    let fetchedDataArray: LedgerLogData[] = [...Array(LEDGER_FETCH_MULTI).fill(null)];
+    let processedUpToIdx = 0, foundEnd = false;
     while (true) {
-      params.set(API_PARAM_CURRENT_PAGE, currentPage.toString());
-      params.set(API_PARAM_MONTH, curMonth.toString());
-      const response: LedgerApiResponse = requestApiResponse(endpoint, params, cookies);
-      const entries = response.data.list;
-
-      if (entries.length === 0) {
-        // reached the end of current month logs
-        break;
-      }
-
-      const stoppingMatched = addEntriesToRows(entries, logHeaderRow, newRows, lastImportedLogTime,
-        (entry: LedgerLogEntry) => {
-          const { time, num, action_id } = entry;
-          return Date.parse(time) === lastImportedLogTime
-            && num === lastImportedLogNum
-            && action_id === lastImportedLogAction;
+      // popluate requests with responses not yet fetched
+      const requests: GoogleAppsScript.URL_Fetch.URLFetchRequest[] = [];
+      for (let i = processedUpToIdx; i < fetchedDataArray.length; i++) {
+        if (!fetchedDataArray[i]) {
+          params.set(API_PARAM_CURRENT_PAGE, (i + 1).toString());
+          requests.push(getApiRequest(endpoint, params, cookies));
         }
-      );
-      if (stoppingMatched) {
-        matchedLastLog = true;
-        break goingThroughAllMonths;
       }
 
-      currentPage++;
+      if (requests.length === 0) {
+        // process remaining
+        while (processedUpToIdx < fetchedDataArray.length) {
+          const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list);
+          if (stoppingMatched) {
+            matchedLastLog = true;
+            break goingThroughAllMonths;
+          }
+          processedUpToIdx++;
+        }
+        break;  // to next month
+      }
+
+      const curResponses = UrlFetchApp.fetchAll(requests);
+
+      // parse and collect fetched pages
+      let fetchSucceededCount = 0;
+      for (const response of curResponses) {
+        const parsed: LedgerApiResponse = JSON.parse(response.getContentText());
+
+        if (parsed.retcode === 0) {
+          const i = parsed.data.current_page - 1;
+          if (parsed.data.list.length === 0) {
+            fetchedDataArray = fetchedDataArray.slice(0, i);
+            foundEnd = true;
+            break;
+          }
+
+          fetchedDataArray[i] = parsed.data;
+          fetchSucceededCount++;
+
+        } else if (parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS.retcode) {
+          throw new Error(`api request failed with retcode "${parsed.retcode}", msg: "${parsed.message}"`);
+        }
+      }
+
+      // process fetched pages
+      while (processedUpToIdx < fetchedDataArray.length && fetchedDataArray[processedUpToIdx]) {
+        const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list);
+        if (stoppingMatched) {
+          matchedLastLog = true;
+          break goingThroughAllMonths;
+        }
+        processedUpToIdx++;
+      }
+
+      if (!foundEnd) {
+        // extend fetchedDataArray to fill LEDGER_FETCH_MULTI limit
+        fetchedDataArray.push(...Array(fetchSucceededCount).fill(null));
+      }
     }
   }
 

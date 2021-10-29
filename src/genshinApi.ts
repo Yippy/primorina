@@ -86,10 +86,10 @@ interface LedgerLogEntry {
 
 interface LedgerLogData {
   optional_month: number[],
-  current_page: string,
-  data_month: string,
+  current_page: number,
+  data_month: number,
   region: string,
-  uid: string,
+  uid: number,
   nickname: string,
   list: LedgerLogEntry[],
 }
@@ -100,7 +100,13 @@ interface LedgerApiResponse {
   data: LedgerLogData,
 }
 
-function requestApiResponse(endpoint: string, params: Map<string, string>, cookies: Cookies = null) {
+const LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS: LedgerApiResponse = {
+  "data": null, "message": "Too many attempts. Try again later", "retcode": -500004
+};
+
+function getApiRequestUrlAndFetchParams(endpoint: string, params: Map<string, string>, cookies: Cookies = null): {
+  url: string, fetchParams: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions
+} {
   const url = getUrlWithParams(endpoint, params);
   const fetchParams = {};
   if (cookies) {
@@ -108,12 +114,25 @@ function requestApiResponse(endpoint: string, params: Map<string, string>, cooki
       { "Cookie": Object.entries(cookies).map(keyValuePair => `${keyValuePair[0]}=${keyValuePair[1]}`).join("; ") };
   }
 
+  return { url, fetchParams };
+}
+
+function requestApiResponse(endpoint: string, params: Map<string, string>, cookies: Cookies = null) {
+  const { url, fetchParams } = getApiRequestUrlAndFetchParams(endpoint, params, cookies);
+
   const response = JSON.parse(UrlFetchApp.fetch(url, fetchParams).getContentText());
   if (response.retcode !== 0) {
     throw new Error(`api request failed with retcode "${response.retcode}", msg: "${response.message}"`);
   }
 
   return response;
+}
+
+function getApiRequest(endpoint: string, params: Map<string, string>, cookies: Cookies = null) {
+  const { url, fetchParams } = getApiRequestUrlAndFetchParams(endpoint, params, cookies);
+  const request = UrlFetchApp.getRequest(url, fetchParams);
+  delete request.headers["X-Forwarded-For"];  // idk what this is but it messes things up
+  return request;
 }
 
 function getReasonMap(config = getConfig()) {

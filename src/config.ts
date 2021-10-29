@@ -63,6 +63,10 @@ const MORA_SHEET_INFO: ILogSheetInfo = {
   }
 }
 
+
+const LEDGER_FETCH_MULTI = 100;
+
+
 // locales
 const languageSettingsForImport = {
   "English": { "code": "en", "full_code": "en-us", "4_star": " (4-Star)", "5_star": " (5-Star)" },
@@ -89,7 +93,7 @@ const regionSettingsForImport: {
   "America": { "code": "os_usa" },
   "Europe": { "code": "os_euro" },
   "Asia": { "code": "os_asia" },
-  "TW, HK, MO": { "code": "os_cht" },
+  "TW HK MO": { "code": "os_cht" },
 };
 
 interface Config {
