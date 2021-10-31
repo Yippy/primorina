@@ -98,7 +98,7 @@ const regionSettingsForImport: {
 
 interface Config {
   authKeyUrl: string,
-  languageCode: string,
+  languageCode: LocaleCode,
   regionCode: RegionCode,
 }
 
@@ -106,7 +106,7 @@ function getConfig(): Config {
   const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
 
   const authKeyUrl: string = settingsSheet.getRange("D17").getValue();
-  const languageCode: string = languageSettingsForImport[settingsSheet.getRange("B2").getValue()].full_code;
+  const languageCode: LocaleCode = languageSettingsForImport[settingsSheet.getRange("B2").getValue()].full_code;
   const regionCode: RegionCode = regionSettingsForImport[settingsSheet.getRange("B3").getValue()].code;
   return { authKeyUrl, languageCode, regionCode };
 }

@@ -12,6 +12,10 @@ interface SpecialColProcs {
   [specialProp: string]: (entry: any) => string;
 }
 
+function serverDivideSpecificOp(serverDivide: ServerDivide, ops: { [serverDivide in ServerDivide]: () => any }) {
+  return ops[serverDivide]();
+}
+
 function addEntriesToRows(
   entries: any[], headerRow: string[], rows: string[][], lastLogTime: number | null,
   stoppingMatch: (entry: any) => boolean, specialColProcs: SpecialColProcs = null)
@@ -90,10 +94,7 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
     lastLogDate = Date.parse(lastLogDateStr);
   }
 
-  const params = getImServiceDefaultQueryParams();
-  params.set(API_PARAM_AUTH_KEY, authKey);
-  params.set(API_PARAM_LANG, config.languageCode);
-  params.set(API_PARAM_SIZE, "20");
+  const params = getImServiceDefaultQueryParams(authKey, config.languageCode);
 
   const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
   const newRows = [];
@@ -119,7 +120,7 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
       break;
     }
 
-    params.set(API_END_ID, entries[entries.length - 1].id);
+    params.end_id = entries[entries.length - 1].id;
   }
 
   if (previousLogCount && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
@@ -152,15 +153,24 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   const logHeaderRow = curValues[0];
   const previousLogCount = curValues.length - 1;
 
-  const cookies: Cookies = { ltoken: ltokenInput, ltuid: ltuidInput };
   const serverDivide = REGION_INFO[config.regionCode].serverDivide;
 
-  const params = getLedgerDefaultQueryParams();
-  params.set(API_PARAM_REGION, config.regionCode);
-  params.set(API_PARAM_LANG, config.languageCode);
+  let cookies: Cookies;
+  serverDivideSpecificOp(serverDivide, {
+    cn: () => { (cookies as LedgerCookieCn) = { cookie_token: ltokenInput, account_id: ltuidInput }; },
+    os: () => { (cookies as LedgerCookieOs) = { ltoken: ltokenInput, ltuid: ltuidInput }; }
+  });
+
+  const curYear = getServerTimeAsUtcNow(config.regionCode).getUTCFullYear();
+  const curMonth = getServerTimeAsUtcNow(config.regionCode).getUTCMonth() + 1;
+
+  const params = LEDGER_GET_DEFAULT_QUERY_PARAMS[serverDivide](config.regionCode);
+  params.month = curMonth.toString();
+  if (serverDivide === "os") {
+    params.lang = config.languageCode;
+  }
 
   const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
-  const curYear = getServerTimeAsUtcNow(config.regionCode).getUTCFullYear();
   const months = (requestApiResponse(endpoint, params, cookies) as LedgerApiResponse).data.optional_month;
   if (months.length === 0) {
     throw Error(`account has no history for ${logSheetInfo.sheetName}`);
@@ -227,7 +237,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   goingThroughAllMonths:
   for (const curMonth of months.reverse()) {
-    params.set(API_PARAM_MONTH, curMonth.toString());
+    params.month = curMonth.toString();
 
     let fetchedDataArray: LedgerLogData[] =
       [...Array(lastImportedIsWithinOneWeek ? 2 : LEDGER_FETCH_MULTI).fill(null)];
@@ -237,7 +247,10 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
       const requests: GoogleAppsScript.URL_Fetch.URLFetchRequest[] = [];
       for (let i = processedUpToIdx; i < fetchedDataArray.length; i++) {
         if (!fetchedDataArray[i]) {
-          params.set(API_PARAM_CURRENT_PAGE, (i + 1).toString());
+          serverDivideSpecificOp(serverDivide, {
+            cn: () => { (params as LedgerParamsCn).page = (i + 1).toString(); },
+            os: () => { (params as LedgerParamsOs).current_page = (i + 1).toString(); }
+          });
           requests.push(getApiRequest(endpoint, params, cookies));
         }
       }
@@ -263,7 +276,10 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
         const parsed: LedgerApiResponse = JSON.parse(response.getContentText());
 
         if (parsed.retcode === 0) {
-          const i = parsed.data.current_page - 1;
+          const i = serverDivideSpecificOp(serverDivide, {
+            cn: () => (parsed.data as LedgerLogDataCn).page - 1,
+            os: () => (parsed.data as LedgerLogDataOs).current_page - 1,
+          });
           if (parsed.data.list.length === 0) {
             fetchedDataArray = fetchedDataArray.slice(0, i);
             foundEnd = true;
@@ -273,7 +289,8 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
           fetchedDataArray[i] = parsed.data;
           fetchSucceededCount++;
 
-        } else if (parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS.retcode) {
+        } else if (parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS_CN.retcode
+          && parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS_OS.retcode) {
           throw new Error(`api request failed with retcode "${parsed.retcode}", msg: "${parsed.message}"`);
         }
       }
