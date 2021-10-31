@@ -248,16 +248,17 @@ function importDataManagement() {
 */
 function findLogByName(name, sheetSource) {
   var logSheet = SpreadsheetApp.getActive().getSheetByName(name);
-  var sheetSource;
   if (logSheet == null) {
     if (sheetSource == null) {
       sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
     }
     if (sheetSource) {
       var sheetCopySource = sheetSource.getSheetByName(name);
-      logSheet = sheetCopySource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
-      logSheet.setName(name);
-      logSheet.showSheet();
+      if (sheetCopySource) {
+        logSheet = sheetCopySource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
+        logSheet.setName(name);
+        logSheet.showSheet();
+      }
     }
   }
   return logSheet;
