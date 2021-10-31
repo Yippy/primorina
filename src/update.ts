@@ -244,6 +244,26 @@ function importDataManagement() {
 }
 
 /**
+* Check is sheet exist in active spreadsheet, otherwise pull sheet from source
+*/
+function findLogByName(name, sheetSource) {
+  var logSheet = SpreadsheetApp.getActive().getSheetByName(name);
+  var sheetSource;
+  if (logSheet == null) {
+    if (sheetSource == null) {
+      sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
+    }
+    if (sheetSource) {
+      var sheetCopySource = sheetSource.getSheetByName(name);
+      logSheet = sheetCopySource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
+      logSheet.setName(name);
+      logSheet.showSheet();
+    }
+  }
+  return logSheet;
+}
+
+/**
 * Update Item List
 */
 function updateItemsList() {
@@ -319,6 +339,13 @@ function updateItemsList() {
           // If exist remove from spreadsheet
           SpreadsheetApp.getActiveSpreadsheet().deleteSheet(sheetToRemove);
         }
+      }
+
+      const listOfSheets = NAME_OF_LOG_HISTORIES.concat(NAME_OF_LOG_HISTORIES_HOYOLAB);
+      const listOfSheetsLength = listOfSheets.length;
+      // Check if sheet exist
+      for (var i = 0; i < listOfSheetsLength; i++) {
+        findLogByName(listOfSheets[i], sheetSource);
       }
 
       // Put available sheet into current
