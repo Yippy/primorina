@@ -8,7 +8,7 @@ var dashboardEditRange = [
   "AV1", // Name of drop down 1 (import)
   "AV2", // Name of drop down 2 (auto import)
   "AG14", // Selection
-  "AG18", // URL
+  "", // URL [NOT NEEDED PROMPT HANDLES URL]
   "AV3", // Name of drop down 3 (HoYoLAB)
   "AG16", // Name of user input
 ];
@@ -24,32 +24,58 @@ function importButtonScript() {
     var userImportSelection = dashboardSheet.getRange(dashboardEditRange[4]).getValue();
     var userAutoImportSelection = dashboardSheet.getRange(dashboardEditRange[5]).getValue();
     var importSelectionText = dashboardSheet.getRange(dashboardEditRange[6]).getValue();
-    var urlInput = dashboardSheet.getRange(dashboardEditRange[7]).getValue();
-    if (urlInput.length > 0) {
-      dashboardSheet.getRange(dashboardEditRange[7]).setValue(""); //Clear input
-      if (userImportSelection == importSelectionText) {
-        settingsSheet.getRange("D6").setValue(urlInput);
-        importDataManagement();
-      } else if (userAutoImportSelection == importSelectionText) {
-        settingsSheet.getRange("D17").setValue(urlInput);
-        importFromAPI();
+    var userInputText = dashboardSheet.getRange(dashboardEditRange[9]).getValue();
+
+    // Check if the selection is not Import from old Document
+    if (userImportSelection != importSelectionText) {
+      if (userAutoImportSelection == importSelectionText) {
+        userInputText += "\n\nNote\nEntering an empty URL will try to load from previously saved Settings";
       } else {
-        settingsSheet.getRange("D31").setValue(urlInput);
-        ltokenInput = urlInput;
-        importFromHoYoLAB();
+        userInputText += "\n\nNote\nEntering an empty HoYoLAB ltoken will try to load from previously saved Settings";
       }
-    } else {
-      var userInputText = dashboardSheet.getRange(dashboardEditRange[9]).getValue();
-      const result = displayUserAlert(importSelectionText, 'The user input of "'+userInputText+`" is empty,\nwould you like to reuse previously stored data from settings?\n.`);
-      if (result == SpreadsheetApp.getUi().Button.OK) {
-        // User wants to reuse previously stored data
+    }
+
+    const resultURL = displayUserPrompt(importSelectionText, userInputText);
+    var button = resultURL.getSelectedButton();
+    if (button == SpreadsheetApp.getUi().Button.OK) {
+      var urlInput = resultURL.getResponseText();
+      if (urlInput.length > 0) {
         if (userImportSelection == importSelectionText) {
+          settingsSheet.getRange("D6").setValue(urlInput);
           importDataManagement();
         } else if (userAutoImportSelection == importSelectionText) {
+          settingsSheet.getRange("D17").setValue(urlInput);
           importFromAPI();
         } else {
-          ltokenInput = settingsSheet.getRange("D31").getValue();
+          settingsSheet.getRange("D31").setValue(urlInput);
+          ltokenInput = urlInput;
           importFromHoYoLAB();
+        }
+      } else {
+        if (userImportSelection == importSelectionText) {
+          SpreadsheetApp.getActiveSpreadsheet().toast("Error URL provided is empty, stopping import function.", importSelectionText);
+        } else {
+          var loadPreviousSetting = "";
+          if (userAutoImportSelection == importSelectionText) {
+            loadPreviousSetting = settingsSheet.getRange("D17").getValue();
+          } else {
+            loadPreviousSetting = settingsSheet.getRange("D31").getValue();
+          }
+          if (loadPreviousSetting.length > 0) {
+            const result = displayUserAlert(importSelectionText, 'The user input is empty,\nwould you like to reuse previously stored data from settings?');
+            if (result == SpreadsheetApp.getUi().Button.OK) {
+              // User wants to reuse previously stored data
+              if (userAutoImportSelection == importSelectionText) {
+                importFromAPI();
+              } else {
+                ltokenInput = settingsSheet.getRange("D31").getValue();
+                importFromHoYoLAB();
+              }
+            }
+          } else {
+            // There is no previous settings, prompt user an error message
+            SpreadsheetApp.getActiveSpreadsheet().toast("Error previous Settings is empty, stopping import function.", importSelectionText);
+          }
         }
       }
     }
