@@ -222,6 +222,10 @@ function importDataManagement() {
           if (calendarStartWeek) {
             settingsSheet.getRange("B5").setValue(calendarStartWeek);
           }
+          var uid = sourceSettingsSheet.getRange("D33").getValue();
+          if (uid) {
+            settingsSheet.getRange("D33").setValue(uid);
+          }
         }
 
         title = "Complete";
