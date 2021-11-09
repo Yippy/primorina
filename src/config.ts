@@ -3,6 +3,7 @@
 const SCRIPT_VERSION = "v0.1.0";
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
+const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
 
 // sheet names
 const SHEET_NAME_DASHBOARD = "Dashboard";

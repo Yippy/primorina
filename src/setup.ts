@@ -1,16 +1,62 @@
 // for license and source, visit https://github.com/3096/primorina
+function onInstall(e) {
+  if (e && e.authMode == ScriptApp.AuthMode.NONE) {
+    generateInitialiseToolbar();
+  } else {
+    onOpen(e);
+  }
+}
 
-function onOpen( ){
-    var ui = SpreadsheetApp.getUi();
+function onOpen(e) {
+  if (e && e.authMode == ScriptApp.AuthMode.NONE) {
+    generateInitialiseToolbar();
+  } else {
     var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
     if (!settingsSheet) {
-        ui.createMenu('TCBS')
-        .addItem('Initialise', 'updateItemsList')
-        .addToUi();
+      generateInitialiseToolbar();
     } else {
       getDefaultMenu();
     }
+    checkLocaleIsSetCorrectly();
+  }
 }
+
+function generateInitialiseToolbar() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('TCBS')
+  .addItem('Initialise', 'updateItemsList')
+  .addToUi();
+}
+
+function displayUserPrompt(titlePrompt: string, messagePrompt: string) {
+  const ui = SpreadsheetApp.getUi();
+  var result = ui.prompt(
+    titlePrompt,
+    messagePrompt,
+    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+  return result;
+}
+
+function displayUserAlert(titleAlert: string, messageAlert: string) {
+  const ui = SpreadsheetApp.getUi();
+  var result = ui.alert(
+    titleAlert,
+    messageAlert,
+    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+  return result;
+}
+
+/* Ensure Sheets is set to the supported locale due to source document formula */
+function checkLocaleIsSetCorrectly() {
+  var currentLocale = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetLocale();
+  if (currentLocale != SHEET_SOURCE_SUPPORTED_LOCALE) {
+    SpreadsheetApp.getActiveSpreadsheet().setSpreadsheetLocale(SHEET_SOURCE_SUPPORTED_LOCALE);
+    var message = 'To ensure compatibility with formula from source document, your locale "'+currentLocale+'" has been changed to "'+SHEET_SOURCE_SUPPORTED_LOCALE+'"';
+    var title = 'Sheets Locale Changed';
+    SpreadsheetApp.getActiveSpreadsheet().toast(message, title);
+  }
+}
+
 function getDefaultMenu() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('TCBS')

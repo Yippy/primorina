@@ -441,21 +441,3 @@ function isHoYoIdCorrect(userInput: string) {
   }
   return isValid;
 }
-
-function displayUserPrompt(titlePrompt: string, messagePrompt: string) {
-  const ui = SpreadsheetApp.getUi();
-  var result = ui.prompt(
-    titlePrompt,
-    messagePrompt,
-    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
-  return result;
-}
-
-function displayUserAlert(titleAlert: string, messageAlert: string) {
-  const ui = SpreadsheetApp.getUi();
-  var result = ui.alert(
-    titleAlert,
-    messageAlert,
-    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
-  return result;
-}
