@@ -4,6 +4,7 @@ function reorderSheets() {
   var settingsSheet = getSettingsSheet();
   if (settingsSheet) {
     var sheetsToSort = settingsSheet.getRange(11, 2, 17, 1).getValues();
+
     for (var i = 0; i < sheetsToSort.length; i++) {
       var sheetName = sheetsToSort[i][0];
       if (sheetName != "") {
@@ -389,6 +390,9 @@ function updateItemsList() {
               }
             }
             if (storedSheet) {
+              if (MONTHLY_SHEET_NAME.indexOf(nameOfBanner) > -1) {
+                refreshMonthlyMonthText(storedSheet, settingsSheet);
+              }
               if (isHiddenString == "YES") {
                 storedSheet.hideSheet();
               } else {

@@ -17,6 +17,31 @@ var dashboardEditRange = [
 var dashboardRefreshRange = [
 ];
 
+function onEdit(e) {
+  // When amending the language, the start of the week refer to the selection first day
+  var ss = e.range.getSheet();
+  if (e.range.getA1Notation() === 'B2' && ss.getName() === SHEET_NAME_SETTINGS) {
+    ss.getRange("B5").setValue(ss.getRange("J3").getValue());
+
+    for (var i = 0; i < MONTHLY_SHEET_NAME.length; i++) {
+      var monthlySheet = SpreadsheetApp.getActive().getSheetByName(MONTHLY_SHEET_NAME[i]);
+      refreshMonthlyMonthText(monthlySheet,ss);
+    }
+  }
+}
+
+function refreshMonthlyMonthText(monthlySheet, settingsSheet) {
+  if (monthlySheet && settingsSheet) {
+    var restoreRanges = monthlySheet.getRange("A1").getValue();
+    restoreRanges = String(restoreRanges).split(",");
+    if (restoreRanges.length = 2) {
+      var monthIndex = Number(monthlySheet.getRange(restoreRanges[0]).getValue());
+      var monthNameInSelection = settingsSheet.getRange(2,17+monthIndex).getValue();
+      monthlySheet.getRange(restoreRanges[1]).setValue(monthNameInSelection);
+    }
+  }
+}
+
 function importButtonScript() {
   var settingsSheet = getSettingsSheet();
   var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
