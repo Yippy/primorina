@@ -8,6 +8,7 @@ const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
 // sheet names
 const SHEET_NAME_DASHBOARD = "Dashboard";
 const SHEET_NAME_CHANGELOG = "Changelog";
+const SHEET_NAME_AVAILABLE = "Available";
 const SHEET_NAME_README = "README";
 const SHEET_NAME_PRIMOGEM_LOG = "Primogem Log";
 const SHEET_NAME_PRIMOGEM_YEARLY_REPORT = "Primogem Yearly Report";

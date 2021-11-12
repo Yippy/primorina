@@ -4,8 +4,6 @@ function reorderSheets() {
   var settingsSheet = getSettingsSheet();
   if (settingsSheet) {
     var sheetsToSort = settingsSheet.getRange(11, 2, 17, 1).getValues();
-    Logger.log(sheetsToSort);
-
     for (var i = 0; i < sheetsToSort.length; i++) {
       var sheetName = sheetsToSort[i][0];
       if (sheetName != "") {
@@ -56,14 +54,14 @@ function quickUpdate() {
         settingsSheet.getRange("G10").setValue(new Date());
       }
 
-      var changelogSheet = SpreadsheetApp.getActive().getSheetByName('Changelog');
+      var changelogSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_CHANGELOG);
       if (changelogSheet) {
         try {
           var sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
           if (sheetSource) {
             // check latest logs to see anything new
             if (dashboardSheet) {
-              var sheetAvailableSource = sheetSource.getSheetByName("Available");
+              var sheetAvailableSource = sheetSource.getSheetByName(SHEET_NAME_AVAILABLE);
               if (dashboardSheet) {
                 var sourceDocumentVersion = sheetAvailableSource.getRange("E1").getValues();
                 var currentDocumentVersion = dashboardSheet.getRange(dashboardEditRange[2]).getValues();
@@ -82,7 +80,7 @@ function quickUpdate() {
               var lastDateChangeSourceText;
               var isChangelogTheSame = true;
 
-              var sheetChangelogSource = sheetSource.getSheetByName("Changelog");
+              var sheetChangelogSource = sheetSource.getSheetByName(SHEET_NAME_CHANGELOG);
               for (var i = 0; i < changesCheckRange.length; i++) {
                 var checkChangelogSource = sheetChangelogSource.getRange(changesCheckRange[i]).getValue();
                 if (checkChangelogSource instanceof Date) {
@@ -284,7 +282,7 @@ function updateItemsList() {
   if (sheetSource) {
     try {
       // attempt to load sheet from source, to prevent removing sheets first.
-      var sheetAvailableSource = sheetSource.getSheetByName("Available");
+      var sheetAvailableSource = sheetSource.getSheetByName(SHEET_NAME_AVAILABLE);
       // Avoid Exception: You can't remove all the sheets in a document.Details
       var placeHolderSheet = null;
       if (SpreadsheetApp.getActive().getSheets().length == 1) {
