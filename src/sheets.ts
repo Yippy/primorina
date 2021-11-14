@@ -34,7 +34,7 @@ function refreshMonthlyMonthText(monthlySheet, settingsSheet) {
   if (monthlySheet && settingsSheet) {
     var restoreRanges = monthlySheet.getRange("A1").getValue();
     restoreRanges = String(restoreRanges).split(",");
-    if (restoreRanges.length = 2) {
+    if (restoreRanges.length == 2) {
       var monthIndex = Number(monthlySheet.getRange(restoreRanges[0]).getValue());
       var monthNameInSelection = settingsSheet.getRange(2,17+monthIndex).getValue();
       monthlySheet.getRange(restoreRanges[1]).setValue(monthNameInSelection);
