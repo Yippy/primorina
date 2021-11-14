@@ -217,6 +217,10 @@ function importDataManagement() {
           if (server) {
             settingsSheet.getRange("B3").setValue(server);
           }
+          var offsetHours = sourceSettingsSheet.getRange("B4").getValue();
+          if (offsetHours) {
+            settingsSheet.getRange("B4").setValue(offsetHours);
+          }
           var calendarStartWeek = sourceSettingsSheet.getRange("B5").getValue();
           if (calendarStartWeek) {
             settingsSheet.getRange("B5").setValue(calendarStartWeek);
