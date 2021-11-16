@@ -1,5 +1,5 @@
 # Use Auto Import from miHoYo
-Using Genshin Impact feedback URL is the fastest way of adding your wishes, this uses miHoYo API on extracting the Wish History for you. This mimic the page movements as if you were viewing the Wish History in game, and has been recommended method for many trackers.
+Using Genshin Impact feedback URL is the fastest way of adding your game data, this uses miHoYo API on extracting the data log for you. This mimic the page movements of seeing the history in your feedback, this method is also used for Wish tracking.
 
 Check the README on how you can get your Feedback URL on your chosen platform, be aware that PlayStation must wait for an webevent that generates an URL.
 ## Generate URL
