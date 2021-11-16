@@ -18,6 +18,8 @@ Coming soon
 
 [Get README](docs/GET_README.md)
 
+[Use Auto Import from miHoYo](docs/USE_AUTO_IMPORT.md)
+
 ## Template Document
 If you prefer to use the Teyvat Central Banking Systems document with embedded script, you can make a copy here:
 spreadsheet link: https://docs.google.com/spreadsheets/d/1VrNIbZGj2XhVZv7eRMgoSO3xUhOm0EVFGFqW0y1BLpI/edit#gid=2087370562
@@ -28,4 +30,4 @@ This project uses https://github.com/google/clasp to help compile code to Google
 1. Run ```npm install -g @google/clasp```
 2. Edit the file .clasp.json with your Google Script
 3. Run ```clasp login```
-4. Run ```clasp push -w```
+4. Run ```clasp push -w``` 
