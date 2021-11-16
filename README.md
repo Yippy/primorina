@@ -16,6 +16,8 @@ Coming soon
 
 [Change Language](docs/CHANGE_LANGUAGE.md)
 
+[Get README](docs/GET_README.md)
+
 ## Template Document
 If you prefer to use the Teyvat Central Banking Systems document with embedded script, you can make a copy here:
 spreadsheet link: https://docs.google.com/spreadsheets/d/1VrNIbZGj2XhVZv7eRMgoSO3xUhOm0EVFGFqW0y1BLpI/edit#gid=2087370562
