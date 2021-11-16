@@ -12,6 +12,10 @@ Coming soon
 ## Preview
 <img src="https://raw.github.com/Yippy/primorina/master/images/teyvat_central_banking_systems_preview.png?sanitize=true">
 
+## Tutorial
+
+[Change Language](docs/CHANGE_LANGUAGE.md)
+
 ## Template Document
 If you prefer to use the Teyvat Central Banking Systems document with embedded script, you can make a copy here:
 spreadsheet link: https://docs.google.com/spreadsheets/d/1VrNIbZGj2XhVZv7eRMgoSO3xUhOm0EVFGFqW0y1BLpI/edit#gid=2087370562
