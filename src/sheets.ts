@@ -202,9 +202,24 @@ function moveToSheetByName(nameOfSheet: string) {
   if (sheet) {
     sheet.activate();
   } else {
-    const title = "Error";
-    const message = "Unable to find sheet named '" + nameOfSheet + "'.";
-    SpreadsheetApp.getActiveSpreadsheet().toast(message, title);
+    var findSheetFromSource;
+    var sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
+    if (sheetSource) {
+      findSheetFromSource = sheetSource.getSheetByName(nameOfSheet);
+      if (findSheetFromSource) {
+        sheet = findSheetFromSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(nameOfSheet);
+      }
+    }
+    if (sheet) {
+      sheet.activate();
+      const title = "Found";
+      const message = "'" + nameOfSheet + "' was copied from Source.";
+      SpreadsheetApp.getActiveSpreadsheet().toast(message, title);
+    } else {
+      const title = "Error";
+      const message = "Unable to find sheet named '" + nameOfSheet + "' and source is unavailable.";
+      SpreadsheetApp.getActiveSpreadsheet().toast(message, title);
+    }
   }
 }
 
