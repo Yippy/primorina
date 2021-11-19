@@ -13,7 +13,7 @@ https://gensheets.co.uk
 
 ## Google Add-on
 Teyvat Central Banking Systems is available on Google Workspace Marketplace from 19th November 2021.
-https://workspace.google.com/marketplace/app/wish_tally/791037722195
+https://workspace.google.com/marketplace/app/teyvat_central_banking_systems/523809188356
 
 ## Preview
 <img src="https://raw.github.com/Yippy/primorina/master/images/teyvat_central_banking_systems_preview.png?sanitize=true">
