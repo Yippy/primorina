@@ -6,8 +6,14 @@ Using Google Sheets to save logs for Genshin Impact, such as:
 - Resins - spending
 - Mora earning
 
+## Project Website
+Visit the Genshin Impact collection of Google Sheets tools:
+
+https://gensheets.co.uk
+
 ## Google Add-on
-Coming soon
+Teyvat Central Banking Systems is available on Google Workspace Marketplace from 19th November 2021.
+https://workspace.google.com/marketplace/app/wish_tally/791037722195
 
 ## Preview
 <img src="https://raw.github.com/Yippy/primorina/master/images/teyvat_central_banking_systems_preview.png?sanitize=true">
@@ -22,7 +28,7 @@ Coming soon
 
 ## Template Document
 If you prefer to use the Teyvat Central Banking Systems document with embedded script, you can make a copy here:
-spreadsheet link: https://docs.google.com/spreadsheets/d/1VrNIbZGj2XhVZv7eRMgoSO3xUhOm0EVFGFqW0y1BLpI/edit#gid=2087370562
+spreadsheet link: https://docs.google.com/spreadsheets/d/1VrNIbZGj2XhVZv7eRMgoSO3xUhOm0EVFGFqW0y1BLpI/edit
 
 ## How to compile script
 This project uses https://github.com/google/clasp to help compile code to Google Script.
