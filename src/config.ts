@@ -1,6 +1,6 @@
 // for license and source, visit https://github.com/3096/primorina
 
-const SCRIPT_VERSION = "v0.1.0";
+const SCRIPT_VERSION = "v1.0.0";
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
 const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
