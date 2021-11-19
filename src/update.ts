@@ -225,6 +225,10 @@ function importDataManagement() {
           if (calendarStartWeek) {
             settingsSheet.getRange("B5").setValue(calendarStartWeek);
           }
+          var decimalFormat = sourceSettingsSheet.getRange("B6").getValue();
+          if (decimalFormat) {
+            settingsSheet.getRange("B6").setValue(decimalFormat);
+          }
           var uid = sourceSettingsSheet.getRange("D33").getValue();
           if (uid) {
             settingsSheet.getRange("D33").setValue(uid);
