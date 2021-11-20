@@ -30,6 +30,8 @@ https://workspace.google.com/marketplace/app/teyvat_central_banking_systems/5238
 
 [Use Auto Import from miHoYo](docs/USE_AUTO_IMPORT.md)
 
+[Use Auto Import from HoYoLAB](docs/USE_AUTO_IMPORT_HOYOLAB.md)
+
 ## Template Document
 If you prefer to use the Teyvat Central Banking Systems document with embedded script, you can make a copy here:
 spreadsheet link: https://docs.google.com/spreadsheets/d/1VrNIbZGj2XhVZv7eRMgoSO3xUhOm0EVFGFqW0y1BLpI/edit
