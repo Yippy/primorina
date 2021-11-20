@@ -30,12 +30,12 @@ Get your HoYoLAB UID, which is different to your Genshin Impact UID.
 # Method a - Cookie
 Using the cookie you can find the HoYoLAB UID as ltuid, same place you have found your ltoken.
 
-<img src="https://raw.github.com/Yippy/primorina/master/images/auto-import-hoyolab/step-3-method-b-getting-hoyolab-uid.png?sanitize=true">
+<img src="https://raw.github.com/Yippy/primorina/master/images/auto-import-hoyolab/step-3-method-a-getting-hoyolab-uid.png?sanitize=true">
 
 # Method b - HoYoLAB Website
 Visit your Account info URL: https://www.hoyolab.com/accountCenter
 
-<img src="https://raw.github.com/Yippy/primorina/master/images/auto-import-hoyolab/step-3-method-a-getting-hoyolab-uid.png?sanitize=true">
+<img src="https://raw.github.com/Yippy/primorina/master/images/auto-import-hoyolab/step-3-method-b-getting-hoyolab-uid.png?sanitize=true">
 
 ## Step 4
 Enter your HoYoLAB UID
