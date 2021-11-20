@@ -1,5 +1,5 @@
 # Use Auto Import from HoYoLAB
-While feedback URL is the best method of extracting data, there is no method to extract Mora. Instead we will use the HoYoLAB login to access the Travellers Diary Tool API on extracting the data log for you. This mimic seeing the history in the mobile history log, and it only goes back from 3 months worth of History.
+While feedback URL is the best method of extracting data, there is no method to extract Mora. Instead we will use the HoYoLAB login to access the Travellers Diary Tool API. This mimic seeing the history in the history log, and it only goes back from 3 months worth of History.
 
 ## How to Get ltoken and ltuid
 
