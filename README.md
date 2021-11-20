@@ -20,6 +20,10 @@ https://workspace.google.com/marketplace/app/teyvat_central_banking_systems/5238
 
 ## Tutorial
 
+[Install Add-on](docs/INSTALL_ADD_ON.md)
+
+[Setup Add-on](docs/SETUP_ADD_ON.md)
+
 [Change Language](docs/CHANGE_LANGUAGE.md)
 
 [Get README](docs/GET_README.md)
