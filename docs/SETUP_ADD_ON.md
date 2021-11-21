@@ -1,11 +1,17 @@
 ### Contents
-[README](../../README.md)
-[Install Add-on](/INSTALL_ADD_ON.md)
+[README](/)
+
+[Install Add-on](/docs/INSTALL_ADD_ON.md)
+
 ➜Setup Add-On
-[Change Language]](/INSTALL_ADD_ON.md)
-[Get README]](/INSTALL_ADD_ON.md)
-[Use Auto Import from miHoYo](/USE_AUTO_IMPORT.md)
-[Use Auto Import from HoYoLAB](/USE_AUTO_IMPORT_HOYOLAB.md)
+
+[Change Language]](/docs/INSTALL_ADD_ON.md)
+
+[Get README]](/docs/INSTALL_ADD_ON.md)
+
+[Use Auto Import from miHoYo](/docs/USE_AUTO_IMPORT.md)
+
+[Use Auto Import from HoYoLAB](/docs/USE_AUTO_IMPORT_HOYOLAB.md)
 
 # Setup Add-On
 After installing the Add-On, you need to initialise the Teyvat Central Banking Systems document
