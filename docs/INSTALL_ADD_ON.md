@@ -1,7 +1,26 @@
+# Contents
+[README](/README.md)
+
+➜Install Add-on
+
+[Setup Add-On](/docs/SETUP_ADD_ON.md)
+
+[Change Language](/docs/CHANGE_LANGUAGE.md)
+
+[Get README](/docs/GET_README.md)
+
+[Use Auto Import from miHoYo](/docs/USE_AUTO_IMPORT.md)
+
+[Use Auto Import from HoYoLAB](/docs/USE_AUTO_IMPORT_HOYOLAB.md)
+
+#
+
 # Install Add-On
 How to install the Teyvat Central Banking Systems Add-On
 
 ## Step 1
+https://workspace.google.com/marketplace/app/teyvat_central_banking_systems/523809188356
+
 Click on the '**Install**' button
 
 <img src="https://raw.github.com/Yippy/primorina/master/images/install-add-on/step-1-install-tcbs.png?sanitize=true">

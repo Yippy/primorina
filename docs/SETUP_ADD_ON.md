@@ -5,9 +5,9 @@
 
 ➜Setup Add-On
 
-[Change Language](/docs/INSTALL_ADD_ON.md)
+[Change Language](/docs/CHANGE_LANGUAGE.md)
 
-[Get README](/docs/INSTALL_ADD_ON.md)
+[Get README](/docs/GET_README.md)
 
 [Use Auto Import from miHoYo](/docs/USE_AUTO_IMPORT.md)
 

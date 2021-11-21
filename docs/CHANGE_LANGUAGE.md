@@ -1,3 +1,20 @@
+# Contents
+[README](/README.md)
+
+[Install Add-on](/docs/INSTALL_ADD_ON.md)
+
+[Setup Add-On](/docs/SETUP_ADD_ON.md)
+
+➜Change Language
+
+[Get README](/docs/GET_README.md)
+
+[Use Auto Import from miHoYo](/docs/USE_AUTO_IMPORT.md)
+
+[Use Auto Import from HoYoLAB](/docs/USE_AUTO_IMPORT_HOYOLAB.md)
+
+#
+
 # Change Language
 Teyvat Central Banking Systems support 13 text language support for Genshin Impact
 

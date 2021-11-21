@@ -1,3 +1,20 @@
+# Contents
+[README](/README.md)
+
+[Install Add-on](/docs/INSTALL_ADD_ON.md)
+
+[Setup Add-On](/docs/SETUP_ADD_ON.md)
+
+[Change Language](/docs/CHANGE_LANGUAGE.md)
+
+[Get README](/docs/GET_README.md)
+
+[Use Auto Import from miHoYo](/docs/USE_AUTO_IMPORT.md)
+
+➜Use Auto Import from HoYoLAB
+
+#
+
 # Use Auto Import from HoYoLAB
 While feedback URL is the best method of extracting data, there is no method to extract Mora. Instead we will use the HoYoLAB login to access the Travellers Diary Tool API. This mimic seeing the history in the history log, and it only goes back from 3 months worth of History.
 

@@ -1,3 +1,20 @@
+# Contents
+[README](/README.md)
+
+[Install Add-on](/docs/INSTALL_ADD_ON.md)
+
+[Setup Add-On](/docs/SETUP_ADD_ON.md)
+
+[Change Language](/docs/CHANGE_LANGUAGE.md)
+
+[Get README](/docs/GET_README.md)
+
+➜Use Auto Import from miHoYo
+
+[Use Auto Import from HoYoLAB](/docs/USE_AUTO_IMPORT_HOYOLAB.md)
+
+#
+
 # Use Auto Import from miHoYo
 Using Genshin Impact feedback URL is the fastest way of adding your game data, this uses miHoYo API on extracting the data log for you. This mimic the page movements of seeing the history in your feedback, this method is also used for Wish tracking.
 

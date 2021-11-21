@@ -1,3 +1,20 @@
+# Contents
+[README](/README.md)
+
+[Install Add-on](/docs/INSTALL_ADD_ON.md)
+
+[Setup Add-On](/docs/SETUP_ADD_ON.md)
+
+[Change Language](/docs/CHANGE_LANGUAGE.md)
+
+➜Get README
+
+[Use Auto Import from miHoYo](/docs/USE_AUTO_IMPORT.md)
+
+[Use Auto Import from HoYoLAB](/docs/USE_AUTO_IMPORT_HOYOLAB.md)
+
+#
+
 # Get README
 Teyvat Central Banking Systems has a how to tutorial within the README, by default the README isn't downloaded.
 
