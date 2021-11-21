@@ -6,13 +6,13 @@ While feedback URL is the best method of extracting data, there is no method to 
 ## Login HoYoLAB
 https://www.hoyolab.com/home
 
-# Chrome
-Bring up the developer tool using 'F12', find www.hoyolab.com cookie and copy ltoken.
+Bring up the developer tool using 'F12', find cookie www.hoyolab.com or webstatic-sea.mihoyo.com (Visting Daily Check-In) and copy ltoken.
 
+# Chrome
 <img src="https://raw.github.com/Yippy/primorina/master/images/auto-import-hoyolab/chrome-get-ltoken.png?sanitize=true">
 
 # FireFox
-
+<img src="https://raw.github.com/Yippy/primorina/master/images/auto-import-hoyolab/firefox-get-ltoken.png?sanitize=true">
 
 ## Step 1
 On the Dashboard sheet, make sure the drop down is set as 'Auto Import from HoYoLAB'
