@@ -213,6 +213,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   let lastImportedLogNum: number = null;
   let lastImportedLogAction: number = null;
   let lastImportedIsWithinOneWeek = false;
+  let monthsToImport = months;
   if (hasPreviousLogInRange) {
     const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
       = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
@@ -220,6 +221,11 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     lastImportedLogNum = parseInt(lastImportedLogNumStr);
     lastImportedLogAction = parseInt(lastImportedLogActionStr);
     lastImportedIsWithinOneWeek = Date.now() - lastImportedLogTime < 1000 * 60 * 60 * 24 * 7;
+
+    // remove months already imported
+    const lastImportedLogTimeObj = new Date(lastImportedLogTime);
+    const lastImportedLogMonthWithYear = `${lastImportedLogTimeObj.getFullYear()}-${lastImportedLogTimeObj.getMonth() + 1}`;
+    monthsToImport = months.filter((x, i) => monthsWithYear[i] >= lastImportedLogMonthWithYear);
   }
 
   const newRows = [];
@@ -236,7 +242,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   );
 
   goingThroughAllMonths:
-  for (const curMonth of months.reverse()) {
+  for (const curMonth of monthsToImport.reverse()) {
     params.month = curMonth.toString();
 
     let fetchedDataArray: LedgerLogData[] =
