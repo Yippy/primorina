@@ -109,6 +109,7 @@ const WEAPON_SHEET_INFO: ILogSheetInfo = {
 }
 
 const LEDGER_FETCH_MULTI = 100;
+const LEDGER_RUN_TIME_LIMIT = 1000 * 60 * 5;  // Google allows 6 mins, but we'll use 5 to be safe
 
 const USER_PREFERENCE_MONTHLY_REPORT = "Monthly Report";
 const USER_PREFERENCE_YEARLY_REPORT = "Yearly Report";

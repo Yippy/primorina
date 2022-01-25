@@ -230,6 +230,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   let newRows = [];
   let matchedLastLog = false;
+  let moreTimeNeeded = false;
 
   const processEntries = (entries: LedgerLogEntry[], rows: string[][]) => addEntriesToRows(
     entries, logHeaderRow, rows, lastImportedLogTime,
@@ -241,10 +242,13 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
   );
 
-  for (const curMonth of monthsToImport) {
-    params.month = curMonth.toString();
+  for (let curMonthIdx = 0; curMonthIdx < monthsToImport.length; curMonthIdx++) {
+    // if month import takes too long, save results before Google kills the run
+    const curMonthStartTime = Date.now();
 
-    const monthNewRows = [];
+    params.month = monthsToImport[curMonthIdx].toString();
+
+    const curMonthRows = [];
     let fetchedDataArray: LedgerLogData[] =
       [...Array(lastImportedIsWithinOneWeek ? 2 : LEDGER_FETCH_MULTI).fill(null)];
     let processedUpToIdx = 0, foundEnd = false;
@@ -264,7 +268,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
       if (requests.length === 0) {
         // process remaining
         while (processedUpToIdx < fetchedDataArray.length) {
-          const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, monthNewRows);
+          const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, curMonthRows);
           if (stoppingMatched) {
             matchedLastLog = true;
             break;
@@ -303,7 +307,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
       // process fetched pages
       while (processedUpToIdx < fetchedDataArray.length && fetchedDataArray[processedUpToIdx]) {
-        const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, monthNewRows);
+        const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, curMonthRows);
         if (stoppingMatched) {
           matchedLastLog = true;
           break;
@@ -317,7 +321,13 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
       }
     }
 
-    newRows = monthNewRows.concat(newRows);
+    newRows = curMonthRows.concat(newRows);
+
+    const curMonthRunTime = Date.now() - curMonthStartTime;
+    if (curMonthRunTime > LEDGER_RUN_TIME_LIMIT / monthsToImport.length && curMonthIdx < monthsToImport.length - 1) {
+      moreTimeNeeded = true;
+      break;
+    }
   }
 
   if (hasPreviousLogInRange && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
@@ -332,6 +342,10 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   const dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(finalRows.length);
   settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
+
+  if (moreTimeNeeded) {
+    throw new Error(`RUN IMPORT AGAIN (MORE TIME NEEDED)`);
+  }
 }
 
 const getPrimogemLog = () => writeImServiceLogToSheet(PRIMOGEM_SHEET_INFO);
