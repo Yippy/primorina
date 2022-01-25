@@ -228,11 +228,11 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     monthsToImport = months.filter((x, i) => monthsWithYear[i] >= lastImportedLogMonthWithYear);
   }
 
-  const newRows = [];
+  let newRows = [];
   let matchedLastLog = false;
 
-  const processEntries = (entries: LedgerLogEntry[]) => addEntriesToRows(
-    entries, logHeaderRow, newRows, lastImportedLogTime,
+  const processEntries = (entries: LedgerLogEntry[], rows: string[][]) => addEntriesToRows(
+    entries, logHeaderRow, rows, lastImportedLogTime,
     (entry: LedgerLogEntry) => {
       const { time, num, action_id } = entry;
       return Date.parse(time) === lastImportedLogTime
@@ -241,10 +241,10 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
   );
 
-  goingThroughAllMonths:
-  for (const curMonth of monthsToImport.reverse()) {
+  for (const curMonth of monthsToImport) {
     params.month = curMonth.toString();
 
+    const monthNewRows = [];
     let fetchedDataArray: LedgerLogData[] =
       [...Array(lastImportedIsWithinOneWeek ? 2 : LEDGER_FETCH_MULTI).fill(null)];
     let processedUpToIdx = 0, foundEnd = false;
@@ -264,10 +264,10 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
       if (requests.length === 0) {
         // process remaining
         while (processedUpToIdx < fetchedDataArray.length) {
-          const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list);
+          const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, monthNewRows);
           if (stoppingMatched) {
             matchedLastLog = true;
-            break goingThroughAllMonths;
+            break;
           }
           processedUpToIdx++;
         }
@@ -303,10 +303,10 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
       // process fetched pages
       while (processedUpToIdx < fetchedDataArray.length && fetchedDataArray[processedUpToIdx]) {
-        const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list);
+        const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, monthNewRows);
         if (stoppingMatched) {
           matchedLastLog = true;
-          break goingThroughAllMonths;
+          break;
         }
         processedUpToIdx++;
       }
@@ -316,6 +316,8 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
         fetchedDataArray.push(...Array(fetchSucceededCount).fill(null));
       }
     }
+
+    newRows = monthNewRows.concat(newRows);
   }
 
   if (hasPreviousLogInRange && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
