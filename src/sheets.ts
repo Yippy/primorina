@@ -237,6 +237,9 @@ const moveToCrystalMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_CRYST
 const moveToResinLogSheet = () => moveToSheetByName(SHEET_NAME_RESIN_LOG);
 const moveToResinYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_RESIN_YEARLY_REPORT);
 const moveToResinMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_RESIN_MONTHLY_REPORT);
+const moveToArtifactLogSheet = () => moveToSheetByName(SHEET_NAME_ARTIFACT_LOG);
+const moveToArtifactYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_ARTIFACT_YEARLY_REPORT);
+const moveToArtifactMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_ARTIFACT_MONTHLY_REPORT);
 const moveToMoraLogSheet = () => moveToSheetByName(SHEET_NAME_MORA_LOG);
 const moveToMoraYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_YEARLY_REPORT);
 const moveToMoraMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_MONTHLY_REPORT);
