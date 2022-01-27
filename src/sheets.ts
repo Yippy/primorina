@@ -11,6 +11,7 @@ var dashboardEditRange = [
   "", // URL [NOT NEEDED PROMPT HANDLES URL]
   "AV3", // Name of drop down 3 (HoYoLAB)
   "AG16", // Name of user input
+  "A41", // Dashboard embedded or add-on notification
 ];
 
 // Cells that needs refreshing

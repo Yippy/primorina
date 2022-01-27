@@ -85,6 +85,8 @@ function getSettingsSheet() {
         settingsSheet.setName(SHEET_NAME_SETTINGS);
         getDefaultMenu();
       }
+    } else {
+      settingsSheet.getRange("H1").setValue(SCRIPT_VERSION);
     }
     var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
     if (!dashboardSheet) {
@@ -95,6 +97,12 @@ function getSettingsSheet() {
       if (sheetDashboardSource) {
         dashboardSheet = sheetDashboardSource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
         dashboardSheet.setName(SHEET_NAME_DASHBOARD);
+      }
+    } else {
+      if (SHEET_SCRIPT_IS_ADD_ON) {
+        dashboardSheet.getRange(dashboardEditRange[10]).setFontColor("green").setFontWeight("bold").setHorizontalAlignment("left").setValue("Add-On Enabled");
+      } else {
+        dashboardSheet.getRange(dashboardEditRange[10]).setFontColor("white").setFontWeight("bold").setHorizontalAlignment("left").setValue("Embedded Script");
       }
     }
     return settingsSheet;
