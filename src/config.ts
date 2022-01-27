@@ -24,15 +24,19 @@ const SHEET_NAME_SETTINGS = "Settings";
 const SHEET_NAME_MORA_LOG = "Mora Log";
 const SHEET_NAME_MORA_YEARLY_REPORT = "Mora Yearly Report";
 const SHEET_NAME_MORA_MONTHLY_REPORT = "Mora Monthly Report";
+const SHEET_NAME_ARTIFACT_LOG = "Artifact Log";
+const SHEET_NAME_ARTIFACT_YEARLY_REPORT = "Artifact Yearly Report";
+const SHEET_NAME_ARTIFACT_MONTHLY_REPORT = "Artifact Monthly Report";
 
 const MONTHLY_SHEET_NAME = [
   SHEET_NAME_PRIMOGEM_MONTHLY_REPORT,
   SHEET_NAME_CRYSTAL_MONTHLY_REPORT,
   SHEET_NAME_RESIN_MONTHLY_REPORT,
+  SHEET_NAME_ARTIFACT_MONTHLY_REPORT,
   SHEET_NAME_MORA_MONTHLY_REPORT
 ]
 
-const NAME_OF_LOG_HISTORIES = [SHEET_NAME_PRIMOGEM_LOG, SHEET_NAME_CRYSTAL_LOG, SHEET_NAME_RESIN_LOG];
+const NAME_OF_LOG_HISTORIES = [SHEET_NAME_PRIMOGEM_LOG, SHEET_NAME_CRYSTAL_LOG, SHEET_NAME_RESIN_LOG, SHEET_NAME_ARTIFACT_LOG];
 const NAME_OF_LOG_HISTORIES_HOYOLAB = [SHEET_NAME_MORA_LOG];
 
 // sheet info
@@ -65,6 +69,14 @@ const RESIN_SHEET_INFO: ILogSheetInfo = {
   }
 }
 
+const ARTIFACT_SHEET_INFO: ILogSheetInfo = {
+  sheetName: SHEET_NAME_ARTIFACT_LOG,
+  apiPaths: {
+    cn: "/ysulog/api/getArtifactLog",
+    os: "/ysulog/api/getArtifactLog",
+  }
+}
+
 const MORA_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_MORA_LOG,
   apiPaths: {
@@ -73,9 +85,7 @@ const MORA_SHEET_INFO: ILogSheetInfo = {
   }
 }
 
-
 const LEDGER_FETCH_MULTI = 100;
-
 
 // locales
 const languageSettingsForImport = {
