@@ -329,12 +329,14 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 const getPrimogemLog = () => writeImServiceLogToSheet(PRIMOGEM_SHEET_INFO);
 const getCrystalLog = () => writeImServiceLogToSheet(CRYSTAL_SHEET_INFO);
 const getResinLog = () => writeImServiceLogToSheet(RESIN_SHEET_INFO);
+const getArtifactLog = () => writeImServiceLogToSheet(ARTIFACT_SHEET_INFO);
 const getMoraLog = () => writeLedgerLogToSheet(MORA_SHEET_INFO);
 
 const LOG_RANGES = {
   "Primogem Log": { "range_status": "E26", "range_toggle": "E19", "range_dashboard_length": "C15" },
   "Crystal Log": { "range_status": "E27", "range_toggle": "E20", "range_dashboard_length": "C20" },
   "Resin Log": { "range_status": "E28", "range_toggle": "E21", "range_dashboard_length": "C25" },
+  "Artifact Log": { "range_status": "E29", "range_toggle": "E22", "range_dashboard_length": "C35" },
   "Mora Log": { "range_status": "E39", "range_toggle": "E35", "range_dashboard_length": "C30" },
 };
 
@@ -368,6 +370,8 @@ function importFromAPI() {
           getPrimogemLog();
         } else if (logName == SHEET_NAME_RESIN_LOG) {
           getResinLog();
+        } else if (logName == SHEET_NAME_ARTIFACT_LOG) {
+          getArtifactLog();
         } else {
           settingsSheet.getRange(bannerSettings['range_status']).setValue("Error log sheet");
         }
