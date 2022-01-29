@@ -165,6 +165,7 @@ function getSettingsSheet() {
       if (sheetDashboardSource) {
         dashboardSheet = sheetDashboardSource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
         dashboardSheet.setName(SHEET_NAME_DASHBOARD);
+        updateDashboard(dashboardSheet);
       }
     } else {
       if (SHEET_SCRIPT_IS_ADD_ON) {
@@ -174,4 +175,17 @@ function getSettingsSheet() {
       }
     }
     return settingsSheet;
+}
+
+function updateDashboard(dashboardSheet) {
+  // Go through the available logs sheet list
+  const availableSheets = NAME_OF_LOG_HISTORIES.concat(NAME_OF_LOG_HISTORIES_HOYOLAB);
+  for (var i = 0; i < availableSheets.length; i++) {
+    var logSheet = SpreadsheetApp.getActive().getSheetByName(availableSheets[i]);
+
+    if (logSheet) {
+      var iLastRow = logSheet.getRange(2, 2, logSheet.getLastRow(), 1).getValues().filter(String).length;
+      dashboardSheet.getRange(LOG_RANGES[availableSheets[i]]['range_dashboard_length']).setValue(iLastRow);
+    }
+  }
 }
