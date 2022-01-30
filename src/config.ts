@@ -24,6 +24,7 @@ const SHEET_NAME_SETTINGS = "Settings";
 const SHEET_NAME_MORA_LOG = "Mora Log";
 const SHEET_NAME_MORA_YEARLY_REPORT = "Mora Yearly Report";
 const SHEET_NAME_MORA_MONTHLY_REPORT = "Mora Monthly Report";
+const SHEET_NAME_ARTIFACT_ITEMS = "Artifact Items";
 const SHEET_NAME_ARTIFACT_LOG = "Artifact Log";
 const SHEET_NAME_ARTIFACT_YEARLY_REPORT = "Artifact Yearly Report";
 const SHEET_NAME_ARTIFACT_MONTHLY_REPORT = "Artifact Monthly Report";

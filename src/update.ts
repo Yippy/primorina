@@ -322,7 +322,7 @@ function updateItemsList() {
         }
       }
       // Remove sheets
-      var listOfSheetsToRemove = [];
+      var listOfSheetsToRemove = [SHEET_NAME_ARTIFACT_ITEMS];
       var availableRangesValues = sheetAvailableSource.getRange(2, 1, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
       var availableRanges = String(availableRangesValues).split(",");
 
@@ -359,6 +359,18 @@ function updateItemsList() {
       for (var i = 0; i < listOfSheetsLength; i++) {
         findLogByName(listOfSheets[i], sheetSource);
       }
+
+      // Add Artifact List
+      var sheetItemSource;
+      if (settingsSheet) {
+        var languageFound = settingsSheet.getRange(2, 2).getValue();
+        sheetItemSource = sheetSource.getSheetByName(SHEET_NAME_ARTIFACT_ITEMS+"-"+languageFound);
+      }
+      if (!sheetItemSource) {
+        // Default
+        sheetItemSource = sheetSource.getSheetByName(SHEET_NAME_ARTIFACT_ITEMS);
+      }
+      sheetItemSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(SHEET_NAME_ARTIFACT_ITEMS).hideSheet();
 
       // Put available sheet into current
       var skipRangeValues = sheetAvailableSource.getRange(2, 2, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
