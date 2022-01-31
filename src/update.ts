@@ -359,18 +359,22 @@ function updateItemsList() {
       for (var i = 0; i < listOfSheetsLength; i++) {
         findLogByName(listOfSheets[i], sheetSource);
       }
+      // Check if userpreferences is available, if not put default settings
+      checkUserPreferenceExist(settingsSheet);
 
-      // Add Artifact List
-      var sheetItemSource;
-      if (settingsSheet) {
-        var languageFound = settingsSheet.getRange(2, 2).getValue();
-        sheetItemSource = sheetSource.getSheetByName(SHEET_NAME_ARTIFACT_ITEMS+"-"+languageFound);
+      if (settingsSheet.getRange(userPreferences[SHEET_NAME_ARTIFACT_LOG][USER_PREFERENCE_MONTHLY_REPORT]).getValue() == "YES" || settingsSheet.getRange(userPreferences[SHEET_NAME_ARTIFACT_LOG][USER_PREFERENCE_YEARLY_REPORT]).getValue() == "YES") {
+        // Add Artifact List when user request Monthly or Yearly Report
+        var sheetItemSource;
+        if (settingsSheet) {
+          var languageFound = settingsSheet.getRange(2, 2).getValue();
+          sheetItemSource = sheetSource.getSheetByName(SHEET_NAME_ARTIFACT_ITEMS+"-"+languageFound);
+        }
+        if (!sheetItemSource) {
+          // Default
+          sheetItemSource = sheetSource.getSheetByName(SHEET_NAME_ARTIFACT_ITEMS);
+        }
+        sheetItemSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(SHEET_NAME_ARTIFACT_ITEMS).hideSheet();
       }
-      if (!sheetItemSource) {
-        // Default
-        sheetItemSource = sheetSource.getSheetByName(SHEET_NAME_ARTIFACT_ITEMS);
-      }
-      sheetItemSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(SHEET_NAME_ARTIFACT_ITEMS).hideSheet();
 
       // Put available sheet into current
       var skipRangeValues = sheetAvailableSource.getRange(2, 2, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
@@ -393,8 +397,19 @@ function updateItemsList() {
         } else {
           if (sheetAvailableSelectionSource) {
             if (!settingOptionNum) {
-              //Enable without settings
-              storedSheet = sheetAvailableSelectionSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(nameOfBanner);
+              // Remove check if relying on 'Available' sheet from source, this is for backwards compatibility for v1.0 less. Artifact is done via 'Available' sheet from source
+              if (nameOfBanner in userPreferencesForReport) {
+                var checkEnabledRanges = settingsSheet.getRange(userPreferencesForReport[nameOfBanner]).getValue();
+                if (checkEnabledRanges == "YES") {
+                  storedSheet = sheetAvailableSelectionSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(nameOfBanner);
+                } else {
+                  storedSheet = null;
+                }
+              } else {
+                //Keep
+                //Enable without settings
+                storedSheet = sheetAvailableSelectionSource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(nameOfBanner);
+              }
             } else {
               // Check current setting has row
               if (settingOptionNum <= settingsSheet.getMaxRows()) {
