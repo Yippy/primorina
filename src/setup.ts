@@ -131,7 +131,7 @@ function getSettingsSheet() {
           SHEET_NAME_ARTIFACT_LOG
         ];
         var rule = SpreadsheetApp.newDataValidation().requireValueInList(listOfSheets, true).build();
-        settingsSheet.getRange(11,2,20,1).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rule);;
+        settingsSheet.getRange(11,2,20,1).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rule);
         settingsSheet.getRange("A28").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(18);
         settingsSheet.getRange("A29").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(19);
         settingsSheet.getRange("A30").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(20);
@@ -139,6 +139,8 @@ function getSettingsSheet() {
         settingsSheet.getRange("B27").setValue(SHEET_NAME_ARTIFACT_MONTHLY_REPORT);
         settingsSheet.getRange("B28").setValue(SHEET_NAME_ARTIFACT_YEARLY_REPORT);
         settingsSheet.getRange("B29").setValue(SHEET_NAME_ARTIFACT_LOG);
+
+        checkUserPreferenceExist(settingsSheet);
         // Load Artifact Log Sheet if missing
         var artifactLogSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_ARTIFACT_LOG);
         if (!artifactLogSheet) {
@@ -175,6 +177,27 @@ function getSettingsSheet() {
       }
     }
     return settingsSheet;
+}
+
+// Due to newer script, migration must be placed on User Preferences for Monthly and Yearly Report
+function checkUserPreferenceExist(settingsSheet) {
+  if(settingsSheet.getRange("A34").getValue() != SHEET_NAME_PRIMOGEM_LOG) {
+    // Missing user preference
+    settingsSheet.insertRowsAfter(39,10);
+
+    var listOfPreferences = ["NO","YES"];
+    var rulePreferences = SpreadsheetApp.newDataValidation().requireValueInList(listOfPreferences, true).build();
+    var rowIndexLoop = 0;
+    for (const key in userPreferences) {
+      settingsSheet.getRange(34 + (3 * rowIndexLoop),1,1,2).setBorder(true, false, false, false, false, false, "black", SpreadsheetApp.BorderStyle.SOLID).mergeAcross().setFontSize(11).setFontWeight("bold").setHorizontalAlignment("center").setValue(key);
+      settingsSheet.getRange(35 + (3 * rowIndexLoop),1).setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(USER_PREFERENCE_MONTHLY_REPORT);
+      settingsSheet.getRange(35 + (3 * rowIndexLoop),2).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rulePreferences).setValue("YES");
+      settingsSheet.getRange(36 + (3 * rowIndexLoop),1).setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(USER_PREFERENCE_YEARLY_REPORT);
+      settingsSheet.getRange(36 + (3 * rowIndexLoop),2).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rulePreferences).setValue("YES");
+      rowIndexLoop++;
+    }
+    settingsSheet.getRange(34 + (3 * rowIndexLoop),1,1,2).setBorder(true, false, false, false, false, false, "black", SpreadsheetApp.BorderStyle.SOLID).mergeAcross().setFontSize(11).setFontWeight("bold").setHorizontalAlignment("center").setValue("");
+  }
 }
 
 function updateDashboard(dashboardSheet) {
