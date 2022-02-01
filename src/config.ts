@@ -1,6 +1,6 @@
 // for license and source, visit https://github.com/3096/primorina
 
-const SCRIPT_VERSION = 1.11;
+const SCRIPT_VERSION = 1.12;
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
 const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
@@ -28,6 +28,9 @@ const SHEET_NAME_ARTIFACT_ITEMS = "Artifact Items";
 const SHEET_NAME_ARTIFACT_LOG = "Artifact Log";
 const SHEET_NAME_ARTIFACT_YEARLY_REPORT = "Artifact Yearly Report";
 const SHEET_NAME_ARTIFACT_MONTHLY_REPORT = "Artifact Monthly Report";
+const SHEET_NAME_WEAPON_LOG = "Weapon Log";
+const SHEET_NAME_WEAPON_YEARLY_REPORT = "Weapon Yearly Report";
+const SHEET_NAME_WEAPON_MONTHLY_REPORT = "Weapon Monthly Report";
 const SHEET_NAME_KEY_ITEMS = "Key Items";
 
 const MONTHLY_SHEET_NAME = [
@@ -35,11 +38,21 @@ const MONTHLY_SHEET_NAME = [
   SHEET_NAME_CRYSTAL_MONTHLY_REPORT,
   SHEET_NAME_RESIN_MONTHLY_REPORT,
   SHEET_NAME_ARTIFACT_MONTHLY_REPORT,
+  SHEET_NAME_WEAPON_MONTHLY_REPORT,
   SHEET_NAME_MORA_MONTHLY_REPORT
-]
+];
 
-const NAME_OF_LOG_HISTORIES = [SHEET_NAME_PRIMOGEM_LOG, SHEET_NAME_CRYSTAL_LOG, SHEET_NAME_RESIN_LOG, SHEET_NAME_ARTIFACT_LOG];
-const NAME_OF_LOG_HISTORIES_HOYOLAB = [SHEET_NAME_MORA_LOG];
+const NAME_OF_LOG_HISTORIES = [
+  SHEET_NAME_PRIMOGEM_LOG,
+  SHEET_NAME_CRYSTAL_LOG,
+  SHEET_NAME_RESIN_LOG,
+  SHEET_NAME_ARTIFACT_LOG,
+  SHEET_NAME_WEAPON_LOG
+];
+
+const NAME_OF_LOG_HISTORIES_HOYOLAB = [
+  SHEET_NAME_MORA_LOG
+];
 
 // sheet info
 interface ILogSheetInfo {
@@ -87,6 +100,14 @@ const MORA_SHEET_INFO: ILogSheetInfo = {
   }
 }
 
+const WEAPON_SHEET_INFO: ILogSheetInfo = {
+  sheetName: SHEET_NAME_WEAPON_LOG,
+  apiPaths: {
+    cn: "/ysulog/api/getWeaponLog",
+    os: "/ysulog/api/getWeaponLog",
+  }
+}
+
 const LEDGER_FETCH_MULTI = 100;
 
 const USER_PREFERENCE_MONTHLY_REPORT = "Monthly Report";
@@ -97,7 +118,8 @@ const userPreferences = {
   "Crystal Log": { "Monthly Report": "B38", "Yearly Report": "B39"},
   "Resin Log": { "Monthly Report": "B41", "Yearly Report": "B42"},
   "Mora Log": { "Monthly Report": "B44", "Yearly Report": "B45"},
-  "Artifact Log": { "Monthly Report": "B47", "Yearly Report": "B48"}
+  "Artifact Log": { "Monthly Report": "B47", "Yearly Report": "B48"},
+  "Weapon Log": { "Monthly Report": "B50", "Yearly Report": "B51"}
 }
 // Remove when using the 'Available' sheet from source, this is for backwards compatibility for v1.0 less. Artifact is done via 'Available' sheet from source
 const userPreferencesForReport = {

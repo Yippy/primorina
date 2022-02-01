@@ -3,7 +3,7 @@
 var dashboardEditRange = [
   "I5", // Status cell
   "AB28", // Document Version
-  "AT41", // Current Document Version
+  "AT46", // Current Document Version
   "T29", // Document Status
   "AV1", // Name of drop down 1 (import)
   "AV2", // Name of drop down 2 (auto import)
@@ -11,7 +11,7 @@ var dashboardEditRange = [
   "", // URL [NOT NEEDED PROMPT HANDLES URL]
   "AV3", // Name of drop down 3 (HoYoLAB)
   "AG16", // Name of user input
-  "A41", // Dashboard embedded or add-on notification
+  "A46", // Dashboard embedded or add-on notification
 ];
 
 // Cells that needs refreshing
@@ -243,4 +243,7 @@ const moveToArtifactMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_ARTI
 const moveToMoraLogSheet = () => moveToSheetByName(SHEET_NAME_MORA_LOG);
 const moveToMoraYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_YEARLY_REPORT);
 const moveToMoraMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_MONTHLY_REPORT);
+const moveToWeaponLogSheet = () => moveToSheetByName(SHEET_NAME_WEAPON_LOG);
+const moveToWeaponYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_WEAPON_YEARLY_REPORT);
+const moveToWeaponMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_WEAPON_MONTHLY_REPORT);
 const moveToKeyItemsSheet = () => moveToSheetByName(SHEET_NAME_KEY_ITEMS);

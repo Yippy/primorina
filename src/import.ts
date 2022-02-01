@@ -330,6 +330,7 @@ const getPrimogemLog = () => writeImServiceLogToSheet(PRIMOGEM_SHEET_INFO);
 const getCrystalLog = () => writeImServiceLogToSheet(CRYSTAL_SHEET_INFO);
 const getResinLog = () => writeImServiceLogToSheet(RESIN_SHEET_INFO);
 const getArtifactLog = () => writeImServiceLogToSheet(ARTIFACT_SHEET_INFO);
+const getWeaponLog = () => writeImServiceLogToSheet(WEAPON_SHEET_INFO);
 const getMoraLog = () => writeLedgerLogToSheet(MORA_SHEET_INFO);
 
 const LOG_RANGES = {
@@ -337,7 +338,8 @@ const LOG_RANGES = {
   "Crystal Log": { "range_status": "E27", "range_toggle": "E20", "range_dashboard_length": "C20" },
   "Resin Log": { "range_status": "E28", "range_toggle": "E21", "range_dashboard_length": "C25" },
   "Artifact Log": { "range_status": "E29", "range_toggle": "E22", "range_dashboard_length": "C35" },
-  "Mora Log": { "range_status": "E39", "range_toggle": "E35", "range_dashboard_length": "C30" },
+  "Weapon Log": { "range_status": "E46", "range_toggle": "E45", "range_dashboard_length": "C40" },
+  "Mora Log": { "range_status": "E39", "range_toggle": "E35", "range_dashboard_length": "C30" }
 };
 
 const ltokenInput: string;
@@ -372,6 +374,8 @@ function importFromAPI() {
           getResinLog();
         } else if (logName == SHEET_NAME_ARTIFACT_LOG) {
           getArtifactLog();
+        } else if (logName == SHEET_NAME_WEAPON_LOG) {
+          getWeaponLog();
         } else {
           settingsSheet.getRange(bannerSettings['range_status']).setValue("Error log sheet");
         }
