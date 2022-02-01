@@ -89,8 +89,8 @@ function getSettingsSheet() {
       settingsSheet.getRange("H1").setValue(SCRIPT_VERSION);
       /* Check migration for settings required */
       var bannerSettings = LOG_RANGES[SHEET_NAME_ARTIFACT_LOG];
-      var isToggled = settingsSheet.getRange(bannerSettings['range_toggle']).getValue();
-      if(isToggled == ""){
+      var isAvailable = settingsSheet.getRange("A31").getValue();
+      if(isAvailable == ""){
         // Migration step required, missing Artifact toggle
         settingsSheet.getRange(13,4,1,2).setBorder(false, false, false, false, false, false).breakApart();
         settingsSheet.getRange("D13").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(SHEET_NAME_MORA_LOG);
@@ -128,17 +128,24 @@ function getSettingsSheet() {
           SHEET_NAME_MORA_LOG,
           SHEET_NAME_ARTIFACT_MONTHLY_REPORT,
           SHEET_NAME_ARTIFACT_YEARLY_REPORT,
-          SHEET_NAME_ARTIFACT_LOG
+          SHEET_NAME_ARTIFACT_LOG,
+          SHEET_NAME_ARTIFACT_ITEMS,
+          SHEET_NAME_KEY_ITEMS
         ];
         var rule = SpreadsheetApp.newDataValidation().requireValueInList(listOfSheets, true).build();
-        settingsSheet.getRange(11,2,20,1).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rule);
+        settingsSheet.getRange(11,2,23,1).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rule);
         settingsSheet.getRange("A28").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(18);
         settingsSheet.getRange("A29").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(19);
         settingsSheet.getRange("A30").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(20);
+        settingsSheet.getRange("A31").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(21);
+        settingsSheet.getRange("A32").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(22);
+        settingsSheet.getRange("A33").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(23);
         
         settingsSheet.getRange("B27").setValue(SHEET_NAME_ARTIFACT_MONTHLY_REPORT);
         settingsSheet.getRange("B28").setValue(SHEET_NAME_ARTIFACT_YEARLY_REPORT);
         settingsSheet.getRange("B29").setValue(SHEET_NAME_ARTIFACT_LOG);
+        settingsSheet.getRange("B30").setValue(SHEET_NAME_ARTIFACT_ITEMS);
+        settingsSheet.getRange("B31").setValue(SHEET_NAME_KEY_ITEMS);
 
         checkUserPreferenceExist(settingsSheet);
         // Load Artifact Log Sheet if missing

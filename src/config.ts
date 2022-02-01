@@ -1,6 +1,6 @@
 // for license and source, visit https://github.com/3096/primorina
 
-const SCRIPT_VERSION = 1.1;
+const SCRIPT_VERSION = 1.11;
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
 const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
@@ -28,6 +28,7 @@ const SHEET_NAME_ARTIFACT_ITEMS = "Artifact Items";
 const SHEET_NAME_ARTIFACT_LOG = "Artifact Log";
 const SHEET_NAME_ARTIFACT_YEARLY_REPORT = "Artifact Yearly Report";
 const SHEET_NAME_ARTIFACT_MONTHLY_REPORT = "Artifact Monthly Report";
+const SHEET_NAME_KEY_ITEMS = "Key Items";
 
 const MONTHLY_SHEET_NAME = [
   SHEET_NAME_PRIMOGEM_MONTHLY_REPORT,

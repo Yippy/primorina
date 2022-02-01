@@ -3,7 +3,7 @@
 function reorderSheets() {
   var settingsSheet = getSettingsSheet();
   if (settingsSheet) {
-    var sheetsToSort = settingsSheet.getRange(11, 2, 20, 1).getValues();
+    var sheetsToSort = settingsSheet.getRange(11, 2, 23, 1).getValues();
 
     for (var i = 0; i < sheetsToSort.length; i++) {
       var sheetName = sheetsToSort[i][0];

@@ -243,3 +243,4 @@ const moveToArtifactMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_ARTI
 const moveToMoraLogSheet = () => moveToSheetByName(SHEET_NAME_MORA_LOG);
 const moveToMoraYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_YEARLY_REPORT);
 const moveToMoraMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_MONTHLY_REPORT);
+const moveToKeyItemsSheet = () => moveToSheetByName(SHEET_NAME_KEY_ITEMS);
