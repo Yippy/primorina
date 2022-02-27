@@ -252,6 +252,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     let fetchedDataArray: LedgerLogData[] =
       [...Array(lastImportedIsWithinOneWeek ? 2 : LEDGER_FETCH_MULTI).fill(null)];
     let processedUpToIdx = 0, foundEnd = false;
+    goingThroughCurMonth:
     while (true) {
       // popluate requests with responses not yet fetched
       const requests: GoogleAppsScript.URL_Fetch.URLFetchRequest[] = [];
@@ -271,11 +272,11 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
           const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, curMonthRows);
           if (stoppingMatched) {
             matchedLastLog = true;
-            break;
+            break goingThroughCurMonth;
           }
           processedUpToIdx++;
         }
-        break;  // to next month
+        break goingThroughCurMonth;  // not matchedLastLog
       }
 
       const curResponses = UrlFetchApp.fetchAll(requests);
@@ -310,7 +311,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
         const stoppingMatched = processEntries(fetchedDataArray[processedUpToIdx].list, curMonthRows);
         if (stoppingMatched) {
           matchedLastLog = true;
-          break;
+          break goingThroughCurMonth;
         }
         processedUpToIdx++;
       }
