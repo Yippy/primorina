@@ -1,6 +1,6 @@
 {
   "name": "primorina",
-  "version": "1.12",
+  "version": "1.13",
   "description": "log primogems",
   "main": "index.js",
   "devDependencies": {

@@ -8,18 +8,21 @@ type LocaleCode =
 
 const API_DOMAINS_BY_SERVER_DIVIDE = {
   cn: "hk4e-api.mihoyo.com",
-  os: "hk4e-api-os.mihoyo.com",
+  os: "hk4e-api-os.hoyoverse.com",
 }
 
 const KNOWN_DOMAIN_LIST = [
   { domain: "user.mihoyo.com", serverDivide: "cn" },
   { domain: "account.mihoyo.com", serverDivide: "os" },
+  { domain: "account.hoyoverse.com", serverDivide: "os" },
 
   { domain: "webstatic.mihoyo.com", serverDivide: "cn" },
   { domain: "webstatic-sea.mihoyo.com", serverDivide: "os" },
+  { domain: "webstatic-sea.hoyoverse.com", serverDivide: "os" },
 
   { domain: "hk4e-api.mihoyo.com", serverDivide: "cn" },
   { domain: "hk4e-api-os.mihoyo.com", serverDivide: "os" },
+  { domain: "hk4e-api-os.hoyoverse.com", serverDivide: "os" },
 ];
 
 const REGION_INFO: {
