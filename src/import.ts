@@ -231,7 +231,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   if (hasPreviousLogInRange) {
     const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
       = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
-    lastImportedLogTime = Date.parse(lastImportedLogTimeStr);
+    lastImportedLogTime = Date.parse(ensureApiTime(lastImportedLogTimeStr));
     lastImportedLogNum = parseInt(lastImportedLogNumStr);
     lastImportedLogAction = parseInt(lastImportedLogActionStr);
     lastImportedIsWithinOneWeek = Date.now() - lastImportedLogTime < 1000 * 60 * 60 * 24 * 7;

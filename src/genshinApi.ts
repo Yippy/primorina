@@ -273,6 +273,14 @@ function sheetDateToApiTimeStr(sheetDate: Date) {  // only use this on date read
     sheetDate, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "YYYY-MM-dd HH:mm:ss");
 }
 
-function getApiTimeAsServerTimeAsUtc(apiTimeStr: string) {
-  return new Date(apiTimeStr.replace(" ", "T") + "Z");
+function ensureApiTime(timeStr: string) {
+  // regex check if the string is in the format of "YYYY-MM-dd HH:mm:ss"
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(timeStr)) {
+    return timeStr;
+  }
+  return sheetDateToApiTimeStr(new Date(timeStr));
+}
+
+function getApiTimeAsServerTimeAsUtc(timeStr: string) {
+  return new Date(ensureApiTime(timeStr).replace(" ", "T") + "Z");
 }
