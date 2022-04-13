@@ -1,6 +1,6 @@
 // for license and source, visit https://github.com/3096/primorina
 
-const SCRIPT_VERSION = "1.20";
+const SCRIPT_VERSION = "1.21";
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
 const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
@@ -53,6 +53,8 @@ const NAME_OF_LOG_HISTORIES = [
 const NAME_OF_LOG_HISTORIES_HOYOLAB = [
   SHEET_NAME_MORA_LOG
 ];
+
+const LOG_CACHE_PREFIX = "CACHED";
 
 // sheet info
 interface ILogSheetInfo {
@@ -109,7 +111,7 @@ const WEAPON_SHEET_INFO: ILogSheetInfo = {
 }
 
 const LEDGER_FETCH_MULTI = 100;
-const LEDGER_RUN_TIME_LIMIT = 1000 * 60 * 5;  // Google allows 6 mins, but we'll use 5 to be safe
+const LEDGER_RUN_TIME_LIMIT = 1000 * 60 * 4;  // we'll only use 4 to leave some time for other things
 
 const USER_PREFERENCE_MONTHLY_REPORT = "Monthly Report";
 const USER_PREFERENCE_YEARLY_REPORT = "Yearly Report";

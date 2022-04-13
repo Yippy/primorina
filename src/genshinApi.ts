@@ -266,7 +266,13 @@ function getServerTimeAsUtcNow(regionCode: RegionCode) {
   return new Date(Date.now() + REGION_INFO[regionCode].timezone * 3600000);
 }
 
-// "YYYY-MM-DD HH:MM:SS"
+// ApiTimeStr = "YYYY-MM-dd HH:mm:ss"
+
+function sheetDateToApiTimeStr(sheetDate: Date) {  // only use this on date read from the sheet
+  return Utilities.formatDate(
+    sheetDate, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "YYYY-MM-dd HH:mm:ss");
+}
+
 function getApiTimeAsServerTimeAsUtc(apiTimeStr: string) {
   return new Date(apiTimeStr.replace(" ", "T") + "Z");
 }

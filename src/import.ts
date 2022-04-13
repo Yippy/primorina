@@ -1,15 +1,25 @@
 // for license and source, visit https://github.com/3096/primorina
 
-function getRowProperties(header: string[], row: string[] | null, props: string[]) {
-  if (!row) return [...Array(props.length).fill(null)];
-  return props.map(prop => {
-    const idx = header.indexOf(prop);
-    return idx >= 0 ? row[idx] : null;
-  });
-}
-
 interface SpecialColProcs {
   [specialProp: string]: (entry: any) => string;
+}
+
+const sheetTimeToStrProc: SpecialColProcs = {
+  'time': (entry: any) => sheetDateToApiTimeStr(new Date(entry)),
+};
+
+function getRowProperties(header: string[], row: string[] | null, props: string[], specialColProcs: SpecialColProcs = null) {
+  if (!row) throw Error("row is null");
+  return props.map(prop => {
+    const idx = header.indexOf(prop);
+    if (idx == -1) {
+      throw Error(`${prop} not found in header`);
+    }
+    if (specialColProcs && specialColProcs.hasOwnProperty(prop)) {
+      return specialColProcs[prop](row[idx]);
+    }
+    return row[idx];
+  });
 }
 
 function serverDivideSpecificOp(serverDivide: ServerDivide, ops: { [serverDivide in ServerDivide]: () => any }) {
@@ -137,11 +147,13 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
   settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + newRows.length);
 }
 
+// if import takes too long, cache results before Google kills the run
+const importStartTime = Date.now();
 function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   const COMPARING_PROPS = ["time", "num", "action_id"];
-  const isSameRowValue = (row0: string[], row1: string[]) => {
-    const props0 = getRowProperties(logHeaderRow, row0, COMPARING_PROPS);
-    const props1 = getRowProperties(logHeaderRow, row1, COMPARING_PROPS);
+  const isSameRowValue = (row0: string[], row1: string[], row0Proc = null, row1Proc = null) => {
+    const props0 = getRowProperties(logHeaderRow, row0, COMPARING_PROPS, row0Proc);
+    const props1 = getRowProperties(logHeaderRow, row1, COMPARING_PROPS, row1Proc);
     return props0.every((value, idx) => value === props1[idx]);
   };
 
@@ -171,12 +183,14 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   }
 
   const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
-  const months = (requestApiResponse(endpoint, params, cookies) as LedgerApiResponse).data.optional_month;
-  if (months.length === 0) {
+  const apiResponseMonthsAvailable
+    = (requestApiResponse(endpoint, params, cookies) as LedgerApiResponse).data.optional_month;
+  if (apiResponseMonthsAvailable.length === 0) {
     throw Error(`account has no history for ${logSheetInfo.sheetName}`);
   }
-  const monthsWithYear =
-    months.map(month => `${month <= months[months.length - 1] ? curYear : curYear - 1}-${month}`);
+  const monthsWithYear = apiResponseMonthsAvailable.map(month =>
+    `${month <= apiResponseMonthsAvailable[apiResponseMonthsAvailable.length - 1] ? curYear : curYear - 1}-${month}`
+  );
 
   let hasPreviousLogInRange = true;
 
@@ -213,7 +227,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   let lastImportedLogNum: number = null;
   let lastImportedLogAction: number = null;
   let lastImportedIsWithinOneWeek = false;
-  let monthsToImport = months;
+  let monthsToImport = apiResponseMonthsAvailable;
   if (hasPreviousLogInRange) {
     const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
       = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
@@ -224,13 +238,14 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
     // remove months already imported
     const lastImportedLogTimeObj = new Date(lastImportedLogTime);
-    const lastImportedLogMonthWithYear = `${lastImportedLogTimeObj.getFullYear()}-${lastImportedLogTimeObj.getMonth() + 1}`;
-    monthsToImport = months.filter((x, i) => monthsWithYear[i] >= lastImportedLogMonthWithYear);
+    const lastImportedLogMonthWithYear
+      = `${lastImportedLogTimeObj.getFullYear()}-${lastImportedLogTimeObj.getMonth() + 1}`;
+    monthsToImport = apiResponseMonthsAvailable.filter((_, i) => monthsWithYear[i] >= lastImportedLogMonthWithYear);
   }
 
   let newRows = [];
   let matchedLastLog = false;
-  let moreTimeNeeded = false;
+  let cachedDueToTimeOut = false;
 
   const processEntries = (entries: LedgerLogEntry[], rows: string[][]) => addEntriesToRows(
     entries, logHeaderRow, rows, lastImportedLogTime,
@@ -242,25 +257,80 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
   );
 
+  goingThroughAllMonths:
   for (let curMonthIdx = 0; curMonthIdx < monthsToImport.length; curMonthIdx++) {
-    // if month import takes too long, save results before Google kills the run
-    const curMonthStartTime = Date.now();
-
     params.month = monthsToImport[curMonthIdx].toString();
 
-    const curMonthRows = [];
-    let fetchedDataArray: LedgerLogData[] =
-      [...Array(lastImportedIsWithinOneWeek ? 2 : LEDGER_FETCH_MULTI).fill(null)];
+    let curMonthRows = [];
+    let startingPage = 1;
+
+    // check if there is a cached data first
+    const curMonthCacheSheetName = `${LOG_CACHE_PREFIX}:${logSheetInfo.sheetName}:${monthsWithYear[curMonthIdx]}`;
+    let curMonthCacheSheet = SpreadsheetApp.getActive().getSheetByName(curMonthCacheSheetName);
+    if (curMonthCacheSheet) {
+      const cachedValues = curMonthCacheSheet.getDataRange().getValues();
+
+      // check if the cached data is still valid
+      const baselineRow = cachedValues[1];
+      let curCheckingRow = 1;
+      let curCheckingPage = 1;
+
+      checkingCachedData:
+      while (true) {
+        serverDivideSpecificOp(serverDivide, {
+          cn: () => { (params as LedgerParamsCn).page = (curCheckingPage).toString(); },
+          os: () => { (params as LedgerParamsOs).current_page = (curCheckingPage).toString(); }
+        });
+
+        const fetchedRows = [];
+        processEntries((requestApiResponse(endpoint, params, cookies) as LedgerApiResponse).data.list, fetchedRows);
+
+        for (const fetchedRow of fetchedRows) {
+          if (!isSameRowValue(cachedValues[curCheckingRow], fetchedRow, sheetTimeToStrProc)) {
+            // failed, data has changed, start over
+            break checkingCachedData;
+          }
+          if (!isSameRowValue(baselineRow, fetchedRow, sheetTimeToStrProc)) {
+            // succeed, more than baselineRow matches, use the cached data
+            startingPage = parseInt(cachedValues[0][0]);
+            curMonthRows = cachedValues.slice(1);
+            break checkingCachedData;
+          }
+
+          curCheckingRow++;
+        }
+
+        curCheckingPage++;
+      }
+    }
+
+    let fetchedDataArray: LedgerLogData[]
+      = [...Array(lastImportedIsWithinOneWeek ? 2 : LEDGER_FETCH_MULTI).fill(null)];
     let processedUpToIdx = 0, foundEnd = false;
+
     goingThroughCurMonth:
     while (true) {
+      // cache fetched data if time runs out
+      const curRunTime = Date.now() - importStartTime;
+      if (curRunTime > LEDGER_RUN_TIME_LIMIT) {
+        cachedDueToTimeOut = true;
+
+        if (!curMonthCacheSheet) {
+          curMonthCacheSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(curMonthCacheSheetName);
+        }
+        curMonthCacheSheet.getRange(1, 1).setValues([[startingPage + processedUpToIdx]]);
+        curMonthCacheSheet.getRange(2, 1, curMonthRows.length, curMonthRows[0].length).setValues(curMonthRows);
+
+        break goingThroughAllMonths;
+      }
+
       // popluate requests with responses not yet fetched
       const requests: GoogleAppsScript.URL_Fetch.URLFetchRequest[] = [];
       for (let i = processedUpToIdx; i < fetchedDataArray.length; i++) {
         if (!fetchedDataArray[i]) {
           serverDivideSpecificOp(serverDivide, {
-            cn: () => { (params as LedgerParamsCn).page = (i + 1).toString(); },
-            os: () => { (params as LedgerParamsOs).current_page = (i + 1).toString(); }
+            cn: () => { (params as LedgerParamsCn).page = (i + startingPage).toString(); },
+            os: () => { (params as LedgerParamsOs).current_page = (i + startingPage).toString(); }
           });
           requests.push(getApiRequest(endpoint, params, cookies));
         }
@@ -288,8 +358,8 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
         if (parsed.retcode === 0) {
           const i = serverDivideSpecificOp(serverDivide, {
-            cn: () => (parsed.data as LedgerLogDataCn).page - 1,
-            os: () => (parsed.data as LedgerLogDataOs).current_page - 1,
+            cn: () => (parsed.data as LedgerLogDataCn).page - startingPage,
+            os: () => (parsed.data as LedgerLogDataOs).current_page - startingPage,
           });
           if (parsed.data.list.length === 0) {
             fetchedDataArray = fetchedDataArray.slice(0, i);
@@ -300,8 +370,10 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
           fetchedDataArray[i] = parsed.data;
           fetchSucceededCount++;
 
-        } else if (parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS_CN.retcode
-          && parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS_OS.retcode) {
+        } else if (serverDivideSpecificOp(serverDivide, {
+          cn: () => parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS_CN.retcode,
+          os: () => parsed.retcode !== LEDGER_ERROR_RESPONSE_TOO_MANY_ATTEMPTS_OS.retcode,
+        })) {
           throw new Error(`api request failed with retcode "${parsed.retcode}", msg: "${parsed.message}"`);
         }
       }
@@ -323,12 +395,6 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     }
 
     newRows = curMonthRows.concat(newRows);
-
-    const curMonthRunTime = Date.now() - curMonthStartTime;
-    if (curMonthRunTime > LEDGER_RUN_TIME_LIMIT / monthsToImport.length && curMonthIdx < monthsToImport.length - 1) {
-      moreTimeNeeded = true;
-      break;
-    }
   }
 
   if (hasPreviousLogInRange && !matchedLastLog && !warnLogsNotMatched(logSheetInfo, settingsSheet)) {
@@ -344,7 +410,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   dashboardSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_dashboard_length']).setValue(finalRows.length);
   settingsSheet.getRange(LOG_RANGES[logSheetInfo.sheetName]['range_status']).setValue("Found: " + (finalRows.length - previousLogCount));
 
-  if (moreTimeNeeded) {
+  if (cachedDueToTimeOut) {
     throw new Error(`RUN IMPORT AGAIN (MORE TIME NEEDED)`);
   }
 }
