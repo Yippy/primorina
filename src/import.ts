@@ -188,8 +188,8 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   if (apiResponseMonthsAvailable.length === 0) {
     throw Error(`account has no history for ${logSheetInfo.sheetName}`);
   }
-  const monthsWithYear = apiResponseMonthsAvailable.map(month =>
-    `${month <= apiResponseMonthsAvailable[apiResponseMonthsAvailable.length - 1] ? curYear : curYear - 1}-${month}`
+  const apiResponseMonthsAvailableWithYear = apiResponseMonthsAvailable.map(month =>
+    `${month <= apiResponseMonthsAvailable[apiResponseMonthsAvailable.length - 1] ? curYear : curYear - 1}-${padMonth(month)}`
   );
 
   let hasPreviousLogInRange = true;
@@ -197,20 +197,22 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   // trim previous log last value
   let trimToRowIdx = 1;
   if (trimToRowIdx < curValues.length) {
-    const isInLogRange = (row: string[]) => {
+    const rowIsInAvailableLogRange = (row: string[]) => {
       const [timeStr] = getRowProperties(logHeaderRow, row, ["time"]);
       const apiTimeAsUtc = getApiTimeAsServerTimeAsUtc(timeStr);
       // having getMonth start at Jan = 0 is the stupidest thing ive ever seen
-      return monthsWithYear.includes(`${apiTimeAsUtc.getUTCFullYear()}-${apiTimeAsUtc.getUTCMonth() + 1}`);
+      return apiResponseMonthsAvailableWithYear.includes(
+        `${apiTimeAsUtc.getUTCFullYear()}-${padMonth(apiTimeAsUtc.getUTCMonth() + 1)}`
+      );
     }
 
-    if (!isInLogRange(curValues[trimToRowIdx])) {
+    if (!rowIsInAvailableLogRange(curValues[trimToRowIdx])) {
       hasPreviousLogInRange = false;
 
     } else {
       do {
         trimToRowIdx++;
-        if (trimToRowIdx >= curValues.length || !isInLogRange(curValues[trimToRowIdx])) {
+        if (trimToRowIdx >= curValues.length || !rowIsInAvailableLogRange(curValues[trimToRowIdx])) {
           hasPreviousLogInRange = false;
           break;
         }
@@ -239,8 +241,8 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     // remove months already imported
     const lastImportedLogTimeObj = new Date(lastImportedLogTime);
     const lastImportedLogMonthWithYear
-      = `${lastImportedLogTimeObj.getFullYear()}-${lastImportedLogTimeObj.getMonth() + 1}`;
-    monthsToImport = apiResponseMonthsAvailable.filter((_, i) => monthsWithYear[i] >= lastImportedLogMonthWithYear);
+      = `${lastImportedLogTimeObj.getFullYear()}-${padMonth(lastImportedLogTimeObj.getMonth() + 1)}`;
+    monthsToImport = apiResponseMonthsAvailable.filter((_, i) => apiResponseMonthsAvailableWithYear[i] >= lastImportedLogMonthWithYear);
   }
 
   let newRows = [];
@@ -265,7 +267,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
     let startingPage = 1;
 
     // check if there is a cached data first
-    const curMonthCacheSheetName = `${LOG_CACHE_PREFIX}:${logSheetInfo.sheetName}:${monthsWithYear[curMonthIdx]}`;
+    const curMonthCacheSheetName = `${LOG_CACHE_PREFIX}:${logSheetInfo.sheetName}:${apiResponseMonthsAvailableWithYear[curMonthIdx]}`;
     let curMonthCacheSheet = SpreadsheetApp.getActive().getSheetByName(curMonthCacheSheetName);
     if (curMonthCacheSheet) {
       const cachedValues = curMonthCacheSheet.getDataRange().getValues();
@@ -538,3 +540,5 @@ function isHoYoIdCorrect(userInput: string) {
   }
   return isValid;
 }
+
+const padMonth = (month: number) => month.toString().padStart(2, '0');
