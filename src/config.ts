@@ -117,12 +117,12 @@ const USER_PREFERENCE_MONTHLY_REPORT = "Monthly Report";
 const USER_PREFERENCE_YEARLY_REPORT = "Yearly Report";
 // User Preferences
 const userPreferences = {
-  "Primogem Log": { "Monthly Report": "B35", "Yearly Report": "B36"},
-  "Crystal Log": { "Monthly Report": "B38", "Yearly Report": "B39"},
-  "Resin Log": { "Monthly Report": "B41", "Yearly Report": "B42"},
-  "Mora Log": { "Monthly Report": "B44", "Yearly Report": "B45"},
-  "Artifact Log": { "Monthly Report": "B47", "Yearly Report": "B48"},
-  "Weapon Log": { "Monthly Report": "B50", "Yearly Report": "B51"}
+  "Primogem Log": { "Monthly Report": "B35", "Yearly Report": "B36", "Log Max Columns": 5},
+  "Crystal Log": { "Monthly Report": "B38", "Yearly Report": "B39", "Log Max Columns": 5},
+  "Resin Log": { "Monthly Report": "B41", "Yearly Report": "B42", "Log Max Columns": 5},
+  "Mora Log": { "Monthly Report": "B44", "Yearly Report": "B45", "Log Max Columns": 5},
+  "Artifact Log": { "Monthly Report": "B47", "Yearly Report": "B48", "Log Max Columns": 8},
+  "Weapon Log": { "Monthly Report": "B50", "Yearly Report": "B51", "Log Max Columns": 5}
 }
 // Remove when using the 'Available' sheet from source, this is for backwards compatibility for v1.0 less. Artifact is done via 'Available' sheet from source
 const userPreferencesForReport = {

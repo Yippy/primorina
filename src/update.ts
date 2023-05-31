@@ -187,14 +187,14 @@ function importDataManagement() {
 
           if (bannerImportSheet) {
             var numberOfRows = bannerImportSheet.getMaxRows() - 1;
-            var numberOfColumns = bannerImportSheet.getMaxColumns();
+            var numberOfColumns = userPreferences[availableSheets[i]]["Log Max Columns"];
             var range = bannerImportSheet.getRange(2, 1, numberOfRows, numberOfColumns);
 
             if (numberOfRows > 0) {
               var bannerSheet = SpreadsheetApp.getActive().getSheetByName(availableSheets[i]);
 
               if (bannerSheet) {
-                bannerSheet.getRange(2, 1, numberOfRows, 5).setValues(range.getValues());
+                bannerSheet.getRange(2, 1, numberOfRows, numberOfColumns).setValues(range.getValues());
 
                 dashboardSheet.getRange(LOG_RANGES[availableSheets[i]]['range_dashboard_length']).setValue(numberOfRows);
                 settingsSheet.getRange(rowOfStatusWishHistory + i, 5).setValue(wishHistoryDoneStatus);
