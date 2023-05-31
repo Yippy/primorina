@@ -59,6 +59,17 @@ function importButtonScript() {
       } else {
         userInputText += "\n\nNote\nEntering an empty HoYoLAB ltoken will try to load from previously saved Settings";
       }
+
+      var loadPreviousKeySetting = "";
+      if (userAutoImportSelection == importSelectionText) {
+        // Too long to display URL to user for Auto Import from miHoYo
+      } else {
+        loadPreviousKeySetting = settingsSheet.getRange("D31").getValue();
+        if (loadPreviousKeySetting.length > 0) {
+          userInputText += "\nHoYoLab ltoken: "+loadPreviousKeySetting;
+          userInputText += "\nHoYoLAB UID: "+settingsSheet.getRange("D33").getValue();
+        }
+      }
     }
 
     const resultURL = displayUserPrompt(importSelectionText, userInputText);
@@ -88,7 +99,17 @@ function importButtonScript() {
             loadPreviousSetting = settingsSheet.getRange("D31").getValue();
           }
           if (loadPreviousSetting.length > 0) {
-            const result = displayUserAlert(importSelectionText, 'The user input is empty,\nwould you like to reuse previously stored data from settings?');
+            var userInputText = 'The user input is empty,\nwould you like to reuse the previously stored data from settings?';
+
+            if (userAutoImportSelection == importSelectionText) {
+              // Too long to display URL to user for Auto Import from miHoYo
+            } else {
+              // Friendly reminder to user of HoYoLab detailed saving in settings
+              userInputText = 'Would you like to reuse these previously stored data from settings?';
+              userInputText += "\n\nHoYoLab ltoken: "+loadPreviousSetting;
+              userInputText += "\nHoYoLAB UID: "+settingsSheet.getRange("D33").getValue();
+            }
+            const result = displayUserAlert(importSelectionText, userInputText);
             if (result == SpreadsheetApp.getUi().Button.OK) {
               // User wants to reuse previously stored data
               if (userAutoImportSelection == importSelectionText) {
