@@ -187,7 +187,8 @@ function importDataManagement() {
 
           if (bannerImportSheet) {
             var numberOfRows = bannerImportSheet.getMaxRows() - 1;
-            var range = bannerImportSheet.getRange(2, 1, numberOfRows, 5);
+            var numberOfColumns = bannerImportSheet.getMaxColumns();
+            var range = bannerImportSheet.getRange(2, 1, numberOfRows, numberOfColumns);
 
             if (numberOfRows > 0) {
               var bannerSheet = SpreadsheetApp.getActive().getSheetByName(availableSheets[i]);
