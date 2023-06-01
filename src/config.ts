@@ -1,6 +1,6 @@
 // for license and source, visit https://github.com/3096/primorina
 
-const SCRIPT_VERSION = "1.22";
+const SCRIPT_VERSION = "1.30";
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
 const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
@@ -67,7 +67,7 @@ interface ILogSheetInfo {
 const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_PRIMOGEM_LOG,
   apiPaths: {
-    cn: "/ysulog/api/getPrimogemLog",
+    cn: "/common/hk4e_self_help_query/User/GetPrimogemLog",
     os: "/common/hk4e_self_help_query/User/GetPrimogemLog",
   },
   header: {
@@ -82,7 +82,7 @@ const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
 const CRYSTAL_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_CRYSTAL_LOG,
   apiPaths: {
-    cn: "/ysulog/api/getCrystalLog",
+    cn: "/common/hk4e_self_help_query/User/GetCrystalLog",
     os: "/common/hk4e_self_help_query/User/GetCrystalLog",
   },
   header: {
@@ -97,7 +97,7 @@ const CRYSTAL_SHEET_INFO: ILogSheetInfo = {
 const RESIN_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_RESIN_LOG,
   apiPaths: {
-    cn: "/ysulog/api/getResinLog",
+    cn: "/common/hk4e_self_help_query/User/GetResinLog",
     os: "/common/hk4e_self_help_query/User/GetResinLog",
   },
   header: {
@@ -112,7 +112,7 @@ const RESIN_SHEET_INFO: ILogSheetInfo = {
 const ARTIFACT_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_ARTIFACT_LOG,
   apiPaths: {
-    cn: "/ysulog/api/getArtifactLog",
+    cn: "/common/hk4e_self_help_query/User/GetArtifactLog",
     os: "/common/hk4e_self_help_query/User/GetArtifactLog",
   },
   header: {
@@ -145,7 +145,7 @@ const MORA_SHEET_INFO: ILogSheetInfo = {
 const WEAPON_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_WEAPON_LOG,
   apiPaths: {
-    cn: "/ysulog/api/getWeaponLog",
+    cn: "/common/hk4e_self_help_query/User/GetWeaponLog",
     os: "/common/hk4e_self_help_query/User/GetWeaponLog",
   },
   header: {
