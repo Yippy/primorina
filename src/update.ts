@@ -323,7 +323,7 @@ function updateItemsList() {
         }
       }
       // Remove sheets
-      var listOfSheetsToRemove = [SHEET_NAME_ARTIFACT_ITEMS];
+      var listOfSheetsToRemove = [SHEET_NAME_ARTIFACT_ITEMS, SHEET_NAME_REASON_MAP];
       var availableRangesValues = sheetAvailableSource.getRange(2, 1, sheetAvailableSource.getMaxRows() - 1, 1).getValues();
       var availableRanges = String(availableRangesValues).split(",");
 
@@ -438,6 +438,11 @@ function updateItemsList() {
           }
         }
       }
+      // Reload header
+      for (var i = 0; i < listOfSheetsLength; i++) {
+        addFormulaByLogName(listOfSheets[i], sheetSource);
+      }
+      loadReasonMapSheet(sheetSource);
 
       // Remove placeholder if available
       if (placeHolderSheet) {

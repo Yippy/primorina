@@ -61,6 +61,15 @@ function getDefaultMenu() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('TCBS')
   .addSeparator()
+  .addSubMenu(ui.createMenu('Log')
+  .addItem('Add Formula For Primogem', 'addFormulaPrimogemLog')
+    .addItem('Add Formula For Crystal', 'addFormulaCrystalLog')
+    .addItem('Add Formula For Resin', 'addFormulaResinLog')
+    .addItem('Add Formula For Mora', 'addFormulaMoraLog')
+    .addItem('Add Formula For Artifact', 'addFormulaArtifactLog')
+    .addItem('Add Formula For Weapon', 'addFormulaWeaponLog')
+  )
+  .addSeparator()
   .addSubMenu(ui.createMenu('Data Management')
           .addItem('Import', 'importDataManagement')
           .addSeparator()
@@ -100,6 +109,150 @@ var listOfSheets = [
   SHEET_NAME_WEAPON_YEARLY_REPORT,
   SHEET_NAME_KEY_ITEMS
 ];
+
+function loadReasonMapSheet(sheetSource = null) {
+  let reasonMapSheet;
+  if (sheetSource == null) {
+    // Avoid reloading source document
+    sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
+  }
+  if (sheetSource) {
+    var reasonMapSource;
+    var settingsSheet = getSettingsSheet();
+    if (settingsSheet) {
+      var languageFound = settingsSheet.getRange(2, 2).getValue();
+      reasonMapSource = sheetSource.getSheetByName(SHEET_NAME_REASON_MAP+"-"+languageFound);
+    }
+    if (reasonMapSource) {
+      // Found language
+    } else {
+      // Default
+      reasonMapSource = sheetSource.getSheetByName(SHEET_NAME_REASON_MAP);
+    }
+    if (reasonMapSource) {
+      reasonMapSheet = reasonMapSource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
+      reasonMapSheet.setName(SHEET_NAME_REASON_MAP);
+      reasonMapSheet.hideSheet();
+    }
+  }
+  return reasonMapSheet;
+}
+
+/**
+* Add Formula Primogem Log
+*/
+function addFormulaPrimogemLog() {
+  addFormulaByLogName(SHEET_NAME_PRIMOGEM_LOG);
+}
+/**
+* Add Formula Crystal Log
+*/
+function addFormulaCrystalLog() {
+  addFormulaByLogName(SHEET_NAME_CRYSTAL_LOG);
+}
+/**
+* Add Formula Resin Log
+*/
+function addFormulaResinLog() {
+  addFormulaByLogName(SHEET_NAME_RESIN_LOG);
+}
+/**
+* Add Formula Mora Log
+*/
+function addFormulaMoraLog() {
+  addFormulaByLogName(SHEET_NAME_MORA_LOG);
+}
+/**
+* Add Formula Artifact Log
+*/
+function addFormulaArtifactLog() {
+  addFormulaByLogName(SHEET_NAME_ARTIFACT_LOG);
+}
+/**
+* Add Formula Weapon Log
+*/
+function addFormulaWeaponLog() {
+  addFormulaByLogName(SHEET_NAME_WEAPON_LOG);
+}
+
+
+/**
+* Add Formula for selected Log sheet
+*/
+function addFormulaLog() {
+  var sheetActive = SpreadsheetApp.getActiveSpreadsheet();
+  var logName = sheetActive.getSheetName();
+  if (NAME_OF_LOG_HISTORIES.indexOf(logName) != -1) {
+    addFormulaByLogName(logName);
+  } else {
+    var message = 'Sheet must be called "' + SHEET_NAME_PRIMOGEM_LOG + '" or "' + SHEET_NAME_CRYSTAL_LOG + '" or "' + SHEET_NAME_RESIN_LOG + '" or "' + SHEET_NAME_MORA_LOG + '" or "' + SHEET_NAME_ARTIFACT_LOG + '" or "' + SHEET_NAME_WEAPON_LOG + '"';
+    var title = 'Invalid Sheet Name';
+    SpreadsheetApp.getActiveSpreadsheet().toast(message, title);
+  }
+}
+
+/**
+* Check is sheet exist in active spreadsheet, otherwise pull sheet from source
+*/
+function findLogByName(name, sheetSource) {
+  var logSheet = SpreadsheetApp.getActive().getSheetByName(name);
+  if (logSheet == null) {
+    if (sheetSource == null) {
+      sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
+    }
+    if (sheetSource) {
+      var sheetCopySource = sheetSource.getSheetByName(name);
+      sheetCopySource.copyTo(SpreadsheetApp.getActiveSpreadsheet()).setName(name);
+      logSheet = SpreadsheetApp.getActive().getSheetByName(name);
+      logSheet.showSheet();
+    }
+  }
+  return logSheet;
+}
+
+function addFormulaByLogName(name, sheetSource = null) {
+  if (sheetSource == null) {
+    // Avoid reloading source document
+    sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
+  }
+  if (sheetSource) {
+    // Add Language
+    var logSource;
+    var settingsSheet = getSettingsSheet();
+    if (settingsSheet) {
+      var languageFound = settingsSheet.getRange(2, 2).getValue();
+      logSource = sheetSource.getSheetByName(name+"-"+languageFound);
+    }
+    if (logSource) {
+      // Found language
+    } else {
+      // Default
+      logSource = sheetSource.getSheetByName(name);
+    }
+    var sheet = findLogByName(name,sheetSource);
+    var logSourceNumberOfColumnWithFormulas = logSource.getLastColumn();
+
+    // Get title columns and set current sheet
+    var titleCells = logSource.getRange(1, 1, 1, logSourceNumberOfColumnWithFormulas).getFormulas();
+    sheet.getRange(1, 1, 1, logSourceNumberOfColumnWithFormulas).setValues(titleCells);
+
+    for (var i = 1; i <= logSourceNumberOfColumnWithFormulas; i++) {
+      // Set column width from source
+      sheet.setColumnWidth(i, logSource.getColumnWidth(i));
+      var logSourceRange = logSource.getRange(1,i);
+      sheet.getRange(1,i).setTextStyle((logSourceRange.getTextStyle()));
+      sheet.getRange(1,i).setBackgroundColor(logSource.getRange(1,i).getBackgroundColor());
+    }
+
+    // Ensure new row is not the same height as first, if row 2 did not exist
+    sheet.autoResizeRows(2, 1);
+  } else {
+    var message = 'Unable to connect to source';
+    var title = 'Error';
+    SpreadsheetApp.getActiveSpreadsheet().toast(message, title);
+  }
+}
+
 function getSettingsSheet() {
     var settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
     var sheetSource;

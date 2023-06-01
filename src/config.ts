@@ -32,6 +32,7 @@ const SHEET_NAME_WEAPON_LOG = "Weapon Log";
 const SHEET_NAME_WEAPON_YEARLY_REPORT = "Weapon Yearly Report";
 const SHEET_NAME_WEAPON_MONTHLY_REPORT = "Weapon Monthly Report";
 const SHEET_NAME_KEY_ITEMS = "Key Items";
+const SHEET_NAME_REASON_MAP = "Reason Map";
 
 const MONTHLY_SHEET_NAME = [
   SHEET_NAME_PRIMOGEM_MONTHLY_REPORT,
@@ -59,14 +60,22 @@ const LOG_CACHE_PREFIX = "CACHED";
 // sheet info
 interface ILogSheetInfo {
   sheetName: string,
-  apiPaths: { [serverDivide in ServerDivide]: string }
+  apiPaths: { [serverDivide in ServerDivide]: string },
+  header: { [headerName in HeaderName]: string }
 }
 
 const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_PRIMOGEM_LOG,
   apiPaths: {
     cn: "/ysulog/api/getPrimogemLog",
-    os: "/ysulog/api/getPrimogemLog",
+    os: "/common/hk4e_self_help_query/User/GetPrimogemLog",
+  },
+  header: {
+    id: "id",
+    datetime: "datetime",
+    total: "add_num",
+    reasonId: "reason_id",
+    reasonDetail: "reason"
   }
 }
 
@@ -74,7 +83,14 @@ const CRYSTAL_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_CRYSTAL_LOG,
   apiPaths: {
     cn: "/ysulog/api/getCrystalLog",
-    os: "/ysulog/api/getCrystalLog",
+    os: "/common/hk4e_self_help_query/User/GetCrystalLog",
+  },
+  header: {
+    id: "id",
+    datetime: "datetime",
+    total: "add_num",
+    reasonId: "reason_id",
+    reasonDetail: "reason"
   }
 }
 
@@ -82,7 +98,14 @@ const RESIN_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_RESIN_LOG,
   apiPaths: {
     cn: "/ysulog/api/getResinLog",
-    os: "/ysulog/api/getResinLog",
+    os: "/common/hk4e_self_help_query/User/GetResinLog",
+  },
+  header: {
+    id: "id",
+    datetime: "datetime",
+    total: "add_num",
+    reasonId: "reason_id",
+    reasonDetail: "reason"
   }
 }
 
@@ -90,7 +113,17 @@ const ARTIFACT_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_ARTIFACT_LOG,
   apiPaths: {
     cn: "/ysulog/api/getArtifactLog",
-    os: "/ysulog/api/getArtifactLog",
+    os: "/common/hk4e_self_help_query/User/GetArtifactLog",
+  },
+  header: {
+    id: "id",
+    datetime: "datetime",
+    total: "add_num",
+    reasonId: "reason_id",
+    reasonDetail: "reason",
+    itemName: "name",
+    itemLevel: "level",
+    itemRarity: "quality"
   }
 }
 
@@ -98,7 +131,14 @@ const MORA_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_MORA_LOG,
   apiPaths: {
     cn: "/event/ys_ledger/monthDetail",
-    os: "/event/ysledgeros/month_detail",
+    os: "/event/ysledgeros/month_detail"
+  },
+  header: {
+    id: "id",
+    datetime: "time",
+    total: "num",
+    reasonId: "action_id",
+    reasonDetail: "action"
   }
 }
 
@@ -106,7 +146,17 @@ const WEAPON_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_WEAPON_LOG,
   apiPaths: {
     cn: "/ysulog/api/getWeaponLog",
-    os: "/ysulog/api/getWeaponLog",
+    os: "/common/hk4e_self_help_query/User/GetWeaponLog",
+  },
+  header: {
+    id: "id",
+    datetime: "datetime",
+    total: "add_num",
+    reasonId: "reason_id",
+    reasonDetail: "reason",
+    itemName: "name",
+    itemLevel: "level",
+    itemRarity: "quality"
   }
 }
 

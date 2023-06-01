@@ -77,13 +77,73 @@ function warnLogsNotMatched(logSheetInfo: ILogSheetInfo, settingsSheet: GoogleAp
   return true;
 }
 
+function findReasonId(reasonDetailName :string, entry: ImServiceLogEntry, reasonMap) {
+  let findKey = entry[reasonDetailName];
+  let foundIdFromMap = 0;
+
+  // Find mapping first from document, very useful in overriding miHoYo random reason change
+  if (localReasonMap == null) {
+    getPopulateReasonMap();
+  }
+  foundIdFromMap = localReasonMap[findKey];
+
+  if (foundIdFromMap == null) {
+    // Find from miHoYo
+    foundIdFromMap = reasonMap.get(findKey);
+  }
+  if (foundIdFromMap == null) {
+    // Unable to find within document or miHoYo
+    foundIdFromMap = 0;
+  }
+  return foundIdFromMap;
+}
+
+var localReasonMap;
+
+function getPopulateReasonMap() {
+  let reasonMapSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_REASON_MAP);
+  localReasonMap = [];
+  let reasonMapData;
+  if (reasonMapSheet) {
+    reasonMapData = reasonMapSheet.getDataRange().getValues();
+  } else {
+    reasonMapSheet = loadReasonMapSheet();
+    if (reasonMapSheet) {
+      reasonMapData = reasonMapSheet.getDataRange().getValues();
+    }
+  }
+  if (reasonMapData) {
+    reasonMapData.forEach(function (row, index) {
+      if (index > 0) {
+        localReasonMap[row[1]] = row[0];
+      }
+    });
+  }
+  return reasonMapSheet;
+}
+
 function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
   const config = getConfig();
   const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
   const logSheet = SpreadsheetApp.getActive().getSheetByName(logSheetInfo.sheetName);
-  const curValues = logSheet.getDataRange().getValues();
-  const logHeaderRow = curValues[0];
-  const previousLogCount = curValues.length - 1;
+  let curValues = logSheet.getDataRange().getValues();
+  let logHeaderRow = curValues[0];
+  try {
+    // Test if headers are correct before proceeding
+    let checkColumns = [logSheetInfo.header.id, logSheetInfo.header.datetime, logSheetInfo.header.ReasonId, logSheetInfo.header.reasonDetail];
+
+    if (logSheetInfo.sheetName == SHEET_NAME_ARTIFACT_LOG || logSheetInfo.sheetName == SHEET_NAME_WEAPON_LOG) {
+      checkColumns.push(logSheetInfo.header.itemRarity, logSheetInfo.header.itemLevel,logSheetInfo.header.itemRarity);
+    }
+    getRowProperties(logHeaderRow, curValues[0], checkColumns);
+  } catch (err) {
+    addFormulaByLogName(logSheetInfo.sheetName);
+    // Reload only the header row
+    var logSourceNumberOfColumnWithFormulas = logSheet.getLastColumn();
+    logHeaderRow = logSheet.getRange(1, 1, 1, logSourceNumberOfColumnWithFormulas).getValues()[0];
+  };
+
+  let previousLogCount = curValues.length - 1;
 
   const reasonMap = getReasonMap(config);
   let authKey: string, serverDivide: ServerDivide;
@@ -99,7 +159,7 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
   let lastLogId: string = null;
   let lastLogDate: number = null;
   if (previousLogCount) {
-    const [lastLogIdStr, lastLogDateStr] = getRowProperties(logHeaderRow, curValues[1], ["id", "time"]);
+    const [lastLogIdStr, lastLogDateStr] = getRowProperties(logHeaderRow, curValues[1], [logSheetInfo.header.id, logSheetInfo.header.datetime]);
     lastLogId = lastLogIdStr;
     lastLogDate = Date.parse(lastLogDateStr);
   }
@@ -122,7 +182,8 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
     const stoppingMatched = addEntriesToRows(entries, logHeaderRow, newRows, lastLogDate,
       (entry: ImServiceLogEntry) => entry.id === lastLogId,
       {
-        "detail": (entry: ImServiceLogEntry) => reasonMap.get(parseInt(entry.reason))
+        [logSheetInfo.header.total]: (entry: ImServiceLogEntry) => parseInt(entry.add_num), // Conversion needed due to GetCrystalLog outputting string, example '+300'
+        [logSheetInfo.header.reasonId]: (entry: ImServiceLogEntry) => findReasonId(logSheetInfo.header.reasonDetail, entry, reasonMap)// There is no reason id, must cross match reason details
       }
     );
     if (stoppingMatched) {
@@ -149,8 +210,26 @@ function writeImServiceLogToSheet(logSheetInfo: ILogSheetInfo) {
 
 // if import takes too long, cache results before Google kills the run
 const importStartTime = Date.now();
+
 function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
-  const COMPARING_PROPS = ["time", "num", "action_id"];
+  const COMPARING_PROPS = [logSheetInfo.header.datetime, logSheetInfo.header.total, logSheetInfo.header.reasonId];
+
+  const logSheet = SpreadsheetApp.getActive().getSheetByName(logSheetInfo.sheetName);
+
+  let curValues = logSheet.getDataRange().getValues();
+  let logHeaderRow = curValues[0];
+
+  try {
+    // Test if headers are correct before proceeding
+    let checkColumns = [logSheetInfo.header.id, logSheetInfo.header.datetime, logSheetInfo.header.reasonId, logSheetInfo.header.reasonDetail];
+    getRowProperties(logHeaderRow, curValues[0], checkColumns);
+  } catch (err) {
+    addFormulaByLogName(logSheetInfo.sheetName);
+    // Reload only the header row
+    var logSourceNumberOfColumnWithFormulas = logSheet.getLastColumn();
+    logHeaderRow = logSheet.getRange(1, 1, 1, logSourceNumberOfColumnWithFormulas).getValues()[0];
+  };
+
   const isSameRowValue = (row0: string[], row1: string[], row0Proc = null, row1Proc = null) => {
     const props0 = getRowProperties(logHeaderRow, row0, COMPARING_PROPS, row0Proc);
     const props1 = getRowProperties(logHeaderRow, row1, COMPARING_PROPS, row1Proc);
@@ -159,10 +238,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   const config = getConfig();
   const settingsSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_SETTINGS);
-  const logSheet = SpreadsheetApp.getActive().getSheetByName(logSheetInfo.sheetName);
 
-  let curValues = logSheet.getDataRange().getValues();
-  const logHeaderRow = curValues[0];
   const previousLogCount = curValues.length - 1;
 
   const serverDivide = REGION_INFO[config.regionCode].serverDivide;
@@ -198,7 +274,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   let trimToRowIdx = 1;
   if (trimToRowIdx < curValues.length) {
     const rowIsInAvailableLogRange = (row: string[]) => {
-      const [timeStr] = getRowProperties(logHeaderRow, row, ["time"]);
+      const [timeStr] = getRowProperties(logHeaderRow, row, [logSheetInfo.header.datetime]);
       const apiTimeAsUtc = getApiTimeAsServerTimeAsUtc(timeStr);
       // having getMonth start at Jan = 0 is the stupidest thing ive ever seen
       return apiResponseMonthsAvailableWithYear.includes(
@@ -232,7 +308,7 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   let monthsToImport = apiResponseMonthsAvailable;
   if (hasPreviousLogInRange) {
     const [lastImportedLogTimeStr, lastImportedLogNumStr, lastImportedLogActionStr]
-      = getRowProperties(logHeaderRow, curValues[1], ["time", "num", "action_id"]);
+      = getRowProperties(logHeaderRow, curValues[1], [logSheetInfo.header.datetime, logSheetInfo.header.total, logSheetInfo.header.reasonId]);
     lastImportedLogTime = Date.parse(ensureApiTime(lastImportedLogTimeStr));
     lastImportedLogNum = parseInt(lastImportedLogNumStr);
     lastImportedLogAction = parseInt(lastImportedLogActionStr);
