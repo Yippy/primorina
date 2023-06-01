@@ -76,6 +76,7 @@ interface ImServiceLogEntry {
   id: string,
   uid: string,
   time: string,
+  datetime: string,
   add_num: string,
   reason: string,
 }
@@ -210,18 +211,18 @@ function getApiRequest(endpoint: string, params: Params, cookies: Cookies = null
   return request;
 }
 
-function getReasonMap(config = getConfig()) {
-  const LANG_MAP_URL = `https://mi18n-os.mihoyo.com/webstatic/admin/mi18n/hk4e_global/m02251421001311/m02251421001311-${config.languageCode}.json`;
+function getReasonMap(config = getConfig()): Map<string, number> {
+  const LANG_MAP_URL = `https://webstatic.hoyoverse.com/admin/mi18n/hk4e_global/m02251421001311/m02251421001311-${config.languageCode}.json`;
   const REASON_PREFIX = "selfinquiry_general_reason_";
 
   const langMap = JSON.parse(UrlFetchApp.fetch(LANG_MAP_URL).getContentText());
 
-  const result = new Map<number, string>();
+  const result = new Map<string, number>();
   for (const key in langMap) {
     if (!key.includes(REASON_PREFIX)) continue;
 
     const reasonId = parseInt(key.substring(REASON_PREFIX.length));
-    result.set(reasonId, langMap[key]);
+    result.set(langMap[key], reasonId);
   }
   return result;
 }
