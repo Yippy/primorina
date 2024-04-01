@@ -230,6 +230,18 @@ function importDataManagement() {
           if (decimalFormat) {
             settingsSheet.getRange("B6").setValue(decimalFormat);
           }
+          var ltokenInput = sourceSettingsSheet.getRange("D30").getValue();
+          if (ltokenInput) {
+            settingsSheet.getRange("D30").setValue(ltokenInput);
+          }
+          var ltuidInput = sourceSettingsSheet.getRange("D31").getValue();
+          if (ltuidInput) {
+            settingsSheet.getRange("D31").setValue(ltuidInput);
+          }
+          var ltmidInput = sourceSettingsSheet.getRange("D32").getValue();
+          if (ltmidInput) {
+            settingsSheet.getRange("D32").setValue(ltmidInput);
+          }
           var uid = sourceSettingsSheet.getRange("D33").getValue();
           if (uid) {
             settingsSheet.getRange("D33").setValue(uid);

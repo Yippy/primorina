@@ -1,6 +1,6 @@
 // for license and source, visit https://github.com/3096/primorina
 
-const SCRIPT_VERSION = "1.30";
+const SCRIPT_VERSION = "1.5";
 
 const SHEET_SOURCE_ID = '1p-SkTsyzoxuKHqqvCJSUCaFBUmxd5uEEvCtb7bAqfDk';
 const SHEET_SOURCE_SUPPORTED_LOCALE = "en_GB";
@@ -31,6 +31,11 @@ const SHEET_NAME_ARTIFACT_MONTHLY_REPORT = "Artifact Monthly Report";
 const SHEET_NAME_WEAPON_LOG = "Weapon Log";
 const SHEET_NAME_WEAPON_YEARLY_REPORT = "Weapon Yearly Report";
 const SHEET_NAME_WEAPON_MONTHLY_REPORT = "Weapon Monthly Report";
+const SHEET_NAME_MASTERLESS_LOG = "Masterless Log";
+const SHEET_NAME_MASTERLESS_YEARLY_REPORT = "Masterless Yearly Report";
+const SHEET_NAME_MASTERLESS_MONTHLY_REPORT = "Masterless Monthly Report";
+const SHEET_NAME_STARGLITTER_LOG = "Starglitter Log";
+const SHEET_NAME_STARDUST_LOG = "Stardust Log";
 const SHEET_NAME_KEY_ITEMS = "Key Items";
 const SHEET_NAME_REASON_MAP = "Reason Map";
 
@@ -40,7 +45,8 @@ const MONTHLY_SHEET_NAME = [
   SHEET_NAME_RESIN_MONTHLY_REPORT,
   SHEET_NAME_ARTIFACT_MONTHLY_REPORT,
   SHEET_NAME_WEAPON_MONTHLY_REPORT,
-  SHEET_NAME_MORA_MONTHLY_REPORT
+  SHEET_NAME_MORA_MONTHLY_REPORT,
+  SHEET_NAME_MASTERLESS_MONTHLY_REPORT
 ];
 
 const NAME_OF_LOG_HISTORIES = [
@@ -48,7 +54,9 @@ const NAME_OF_LOG_HISTORIES = [
   SHEET_NAME_CRYSTAL_LOG,
   SHEET_NAME_RESIN_LOG,
   SHEET_NAME_ARTIFACT_LOG,
-  SHEET_NAME_WEAPON_LOG
+  SHEET_NAME_WEAPON_LOG,
+  SHEET_NAME_STARGLITTER_LOG,
+  SHEET_NAME_STARDUST_LOG
 ];
 
 const NAME_OF_LOG_HISTORIES_HOYOLAB = [
@@ -60,12 +68,14 @@ const LOG_CACHE_PREFIX = "CACHED";
 // sheet info
 interface ILogSheetInfo {
   sheetName: string,
+  endpointType: string,
   apiPaths: { [serverDivide in ServerDivide]: string },
   header: { [headerName in HeaderName]: string }
 }
 
 const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_PRIMOGEM_LOG,
+  endpointType: "feedback",
   apiPaths: {
     cn: "/common/hk4e_self_help_query/User/GetPrimogemLog",
     os: "/common/hk4e_self_help_query/User/GetPrimogemLog",
@@ -74,6 +84,7 @@ const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
     id: "id",
     datetime: "datetime",
     total: "add_num",
+    quantity: "quantity",
     reasonId: "reason_id",
     reasonDetail: "reason"
   }
@@ -81,6 +92,7 @@ const PRIMOGEM_SHEET_INFO: ILogSheetInfo = {
 
 const CRYSTAL_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_CRYSTAL_LOG,
+  endpointType: "feedback",
   apiPaths: {
     cn: "/common/hk4e_self_help_query/User/GetCrystalLog",
     os: "/common/hk4e_self_help_query/User/GetCrystalLog",
@@ -96,6 +108,7 @@ const CRYSTAL_SHEET_INFO: ILogSheetInfo = {
 
 const RESIN_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_RESIN_LOG,
+  endpointType: "feedback",
   apiPaths: {
     cn: "/common/hk4e_self_help_query/User/GetResinLog",
     os: "/common/hk4e_self_help_query/User/GetResinLog",
@@ -111,6 +124,7 @@ const RESIN_SHEET_INFO: ILogSheetInfo = {
 
 const ARTIFACT_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_ARTIFACT_LOG,
+  endpointType: "feedback",
   apiPaths: {
     cn: "/common/hk4e_self_help_query/User/GetArtifactLog",
     os: "/common/hk4e_self_help_query/User/GetArtifactLog",
@@ -129,6 +143,7 @@ const ARTIFACT_SHEET_INFO: ILogSheetInfo = {
 
 const MORA_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_MORA_LOG,
+  endpointType: "diary",
   apiPaths: {
     cn: "/event/ys_ledger/monthDetail",
     os: "/event/ysledgeros/month_detail"
@@ -144,6 +159,7 @@ const MORA_SHEET_INFO: ILogSheetInfo = {
 
 const WEAPON_SHEET_INFO: ILogSheetInfo = {
   sheetName: SHEET_NAME_WEAPON_LOG,
+  endpointType: "feedback",
   apiPaths: {
     cn: "/common/hk4e_self_help_query/User/GetWeaponLog",
     os: "/common/hk4e_self_help_query/User/GetWeaponLog",
@@ -160,6 +176,38 @@ const WEAPON_SHEET_INFO: ILogSheetInfo = {
   }
 }
 
+const MASTERLESS_STARGLITTER_SHEET_INFO: ILogSheetInfo = {
+  sheetName: SHEET_NAME_STARGLITTER_LOG,
+  endpointType: "feedback",
+  apiPaths: {
+    cn: "/common/hk4e_self_help_query/User/GetStarglitter",
+    os: "/common/hk4e_self_help_query/User/GetStarglitter",
+  },
+  header: {
+    id: "id",
+    datetime: "datetime",
+    quantity: "quantity",
+    reasonDetail: "sub_action_name",
+    battlePathType: "battle_path_type"
+  }
+}
+
+const MASTERLESS_STARDUST_SHEET_INFO: ILogSheetInfo = {
+  sheetName: SHEET_NAME_STARDUST_LOG,
+  endpointType: "feedback",
+  apiPaths: {
+    cn: "/common/hk4e_self_help_query/User/GetStardustLog",
+    os: "/common/hk4e_self_help_query/User/GetStardustLog",
+  },
+  header: {
+    id: "id",
+    datetime: "datetime",
+    quantity: "quantity",
+    reasonDetail: "sub_action_name",
+    battlePathType: "battle_path_type"
+  }
+}
+
 const LEDGER_FETCH_MULTI = 100;
 const LEDGER_RUN_TIME_LIMIT = 1000 * 60 * 4;  // we'll only use 4 to leave some time for other things
 
@@ -172,7 +220,9 @@ const userPreferences = {
   "Resin Log": { "Monthly Report": "B41", "Yearly Report": "B42", "Log Max Columns": 5},
   "Mora Log": { "Monthly Report": "B44", "Yearly Report": "B45", "Log Max Columns": 5},
   "Artifact Log": { "Monthly Report": "B47", "Yearly Report": "B48", "Log Max Columns": 8},
-  "Weapon Log": { "Monthly Report": "B50", "Yearly Report": "B51", "Log Max Columns": 8}
+  "Weapon Log": { "Monthly Report": "B50", "Yearly Report": "B51", "Log Max Columns": 8},
+  "Starglitter Log": { "Monthly Report": "B53", "Yearly Report": "B54", "Log Max Columns": 5},
+  "Stardust Log": { "Monthly Report": "B53", "Yearly Report": "B54", "Log Max Columns": 5}
 }
 // Remove when using the 'Available' sheet from source, this is for backwards compatibility for v1.0 less. Artifact is done via 'Available' sheet from source
 const userPreferencesForReport = {

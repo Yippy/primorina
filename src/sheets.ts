@@ -2,16 +2,16 @@
 
 var dashboardEditRange = [
   "I5", // Status cell
-  "AB28", // Document Version
-  "AT46", // Current Document Version
-  "T29", // Document Status
+  "AP40", // Document Version
+  "AT53", // Current Document Version
+  "AH41", // Document Status
   "AV1", // Name of drop down 1 (import)
   "AV2", // Name of drop down 2 (auto import)
   "AG14", // Selection
   "", // URL [NOT NEEDED PROMPT HANDLES URL]
   "AV3", // Name of drop down 3 (HoYoLAB)
   "AG16", // Name of user input
-  "A46", // Dashboard embedded or add-on notification
+  "A53", // Dashboard embedded or add-on notification
 ];
 
 // Cells that needs refreshing
@@ -43,6 +43,31 @@ function refreshMonthlyMonthText(monthlySheet, settingsSheet) {
   }
 }
 
+function loadHoYoLabData(settingsSheet) {
+  if (settingsSheet.getRange("D30").isPartOfMerge()) {
+    // Migration process for v2.0
+    settingsSheet.getRange("D30:E30").breakApart();
+    settingsSheet.getRange("D30").setValue("cookie_token_v2").setBackground("#cccccc");
+    settingsSheet.getRange("E30").setValue(settingsSheet.getRange("D31").getValue()).setBackground("white").setNumberFormat("@");
+
+    settingsSheet.getRange("D31:E31").breakApart();
+    settingsSheet.getRange("D31").setValue("account_id_v2").setBackground("#cccccc");
+    settingsSheet.getRange("E31").setValue(settingsSheet.getRange("D33").getValue()).setBackground("white").setNumberFormat("0");
+
+    settingsSheet.getRange("D32:E32").breakApart();
+    settingsSheet.getRange("D32").setValue("account_mid_v2").setBackground("#cccccc");
+    settingsSheet.getRange("E32").setValue("").setBackground("white").setNumberFormat("@");
+
+    settingsSheet.getRange("D33:E33").breakApart();
+    settingsSheet.getRange("D33").setValue("Genshin Impact UID").setBackground("#cccccc");
+    settingsSheet.getRange("E33").setValue("").setBackground("white").setNumberFormat("0");
+  }
+  ltokenInput = settingsSheet.getRange("E30").getValue();
+  ltuidInput = settingsSheet.getRange("E31").getValue().toFixed(0);
+  ltmidInput = settingsSheet.getRange("E32").getValue();
+  guidInput = settingsSheet.getRange("E33").getValue().toFixed(0);
+}
+
 function importButtonScript() {
   var settingsSheet = getSettingsSheet();
   var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
@@ -56,23 +81,20 @@ function importButtonScript() {
     if (userImportSelection != importSelectionText) {
       if (userAutoImportSelection == importSelectionText) {
         userInputText += "\n\nNote\nEntering an empty URL will try to load from previously saved Settings";
-      } else {
-        userInputText += "\n\nNote\nEntering an empty HoYoLAB ltoken will try to load from previously saved Settings";
-      }
-
-      var loadPreviousKeySetting = "";
-      if (userAutoImportSelection == importSelectionText) {
         // Too long to display URL to user for Auto Import from miHoYo
       } else {
-        loadPreviousKeySetting = settingsSheet.getRange("D31").getValue();
-        if (loadPreviousKeySetting.length > 0) {
-          userInputText += "\nHoYoLab ltoken: "+loadPreviousKeySetting;
-          userInputText += "\nHoYoLAB UID: "+settingsSheet.getRange("D33").getValue();
-        }
+        loadHoYoLabData(settingsSheet);
+        userInputText = "Note\nEntering an empty HoYoLAB ltoken/cookie_token_v2 will try to load from previously saved Settings";
+        userInputText += "\n\nPreviously Saved HoYoLab Cookies:\ncookie_token_v2: "+ltokenInput;
+        userInputText += "\nltuid/account_id_v2: "+ltuidInput;
+        userInputText += "\naccount_mid_v2: "+ltmidInput;
+        userInputText += "\nGenshin Impact UID: "+guidInput;
+        
+        userInputText += "\n\nEnter new cookie_token_v2 in textfield:";
       }
     }
 
-    const resultURL = displayUserPrompt(importSelectionText, userInputText);
+    const resultURL = displayUserPrompt(importSelectionText, userInputText, SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
     var button = resultURL.getSelectedButton();
     if (button == SpreadsheetApp.getUi().Button.OK) {
       var urlInput = resultURL.getResponseText();
@@ -84,9 +106,9 @@ function importButtonScript() {
           settingsSheet.getRange("D17").setValue(urlInput);
           importFromAPI();
         } else {
-          settingsSheet.getRange("D31").setValue(urlInput);
+          settingsSheet.getRange("E30").setValue(urlInput);
           ltokenInput = urlInput;
-          importFromHoYoLAB();
+          loadHoYoLABUIDPopup(settingsSheet);
         }
       } else {
         if (userImportSelection == importSelectionText) {
@@ -96,7 +118,7 @@ function importButtonScript() {
           if (userAutoImportSelection == importSelectionText) {
             loadPreviousSetting = settingsSheet.getRange("D17").getValue();
           } else {
-            loadPreviousSetting = settingsSheet.getRange("D31").getValue();
+            loadPreviousSetting = ltokenInput;
           }
           if (loadPreviousSetting.length > 0) {
             var userInputText = 'The user input is empty,\nwould you like to reuse the previously stored data from settings?';
@@ -106,8 +128,10 @@ function importButtonScript() {
             } else {
               // Friendly reminder to user of HoYoLab detailed saving in settings
               userInputText = 'Would you like to reuse these previously stored data from settings?';
-              userInputText += "\n\nHoYoLab ltoken: "+loadPreviousSetting;
-              userInputText += "\nHoYoLAB UID: "+settingsSheet.getRange("D33").getValue();
+              userInputText += "\n\nHoYoLab cookie_token_v2: "+loadPreviousSetting;
+              userInputText += "\nHoYoLAB account_id_v2: "+ltuidInput;
+              userInputText += "\nHoYoLAB account_mid_v2: "+ltmidInput;
+              userInputText += "\nGenshin Impact UID: "+guidInput;
             }
             const result = displayUserAlert(importSelectionText, userInputText);
             if (result == SpreadsheetApp.getUi().Button.OK) {
@@ -115,7 +139,6 @@ function importButtonScript() {
               if (userAutoImportSelection == importSelectionText) {
                 importFromAPI();
               } else {
-                ltokenInput = settingsSheet.getRange("D31").getValue();
                 importFromHoYoLAB();
               }
             }
@@ -267,4 +290,8 @@ const moveToMoraMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_MORA_MON
 const moveToWeaponLogSheet = () => moveToSheetByName(SHEET_NAME_WEAPON_LOG);
 const moveToWeaponYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_WEAPON_YEARLY_REPORT);
 const moveToWeaponMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_WEAPON_MONTHLY_REPORT);
+const moveToStarglitterLogSheet = () => moveToSheetByName(SHEET_NAME_STARGLITTER_LOG);
+const moveToStardustLogSheet = () => moveToSheetByName(SHEET_NAME_STARDUST_LOG);
+const moveToMasterlessYearlyReportSheet = () => moveToSheetByName(SHEET_NAME_MASTERLESS_YEARLY_REPORT);
+const moveToMasterlessMonthlyReportSheet = () => moveToSheetByName(SHEET_NAME_MASTERLESS_MONTHLY_REPORT);
 const moveToKeyItemsSheet = () => moveToSheetByName(SHEET_NAME_KEY_ITEMS);

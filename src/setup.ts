@@ -28,12 +28,13 @@ function generateInitialiseToolbar() {
   .addToUi();
 }
 
-function displayUserPrompt(titlePrompt: string, messagePrompt: string) {
+function displayUserPrompt(titlePrompt: string, messagePrompt: string, buttonSet) {
   const ui = SpreadsheetApp.getUi();
   var result = ui.prompt(
     titlePrompt,
     messagePrompt,
-    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    buttonSet
+  );
   return result;
 }
 
@@ -42,7 +43,8 @@ function displayUserAlert(titleAlert: string, messageAlert: string) {
   var result = ui.alert(
     titleAlert,
     messageAlert,
-    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
+    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL
+  );
   return result;
 }
 
@@ -68,14 +70,16 @@ function getDefaultMenu() {
     .addItem('Add Formula For Mora', 'addFormulaMoraLog')
     .addItem('Add Formula For Artifact', 'addFormulaArtifactLog')
     .addItem('Add Formula For Weapon', 'addFormulaWeaponLog')
+    .addItem('Add Formula For Starglitter', 'addFormulaStarglitterLog')
+    .addItem('Add Formula For Stardust', 'addFormulaStardustLog')
   )
   .addSeparator()
   .addSubMenu(ui.createMenu('Data Management')
-          .addItem('Import', 'importDataManagement')
-          .addSeparator()
-          .addItem('Auto Import from miHoYo', 'importFromAPI')
-          .addItem('Auto Import from HoYoLAB', 'importFromHoYoLAB')
-          )
+    .addItem('Import', 'importDataManagement')
+    .addSeparator()
+    .addItem('Auto Import from miHoYo', 'importFromAPI')
+    .addItem('Auto Import from HoYoLAB', 'loadImportFromHoYoLAB')
+  )
   .addSeparator()
   .addItem('Quick Update', 'quickUpdate')
   .addItem('Update Items', 'updateItemsList')
@@ -107,6 +111,10 @@ var listOfSheets = [
   SHEET_NAME_WEAPON_LOG,
   SHEET_NAME_WEAPON_MONTHLY_REPORT,
   SHEET_NAME_WEAPON_YEARLY_REPORT,
+  SHEET_NAME_STARGLITTER_LOG,
+  SHEET_NAME_STARDUST_LOG,
+  SHEET_NAME_MASTERLESS_MONTHLY_REPORT,
+  SHEET_NAME_MASTERLESS_YEARLY_REPORT,
   SHEET_NAME_KEY_ITEMS
 ];
 
@@ -175,6 +183,18 @@ function addFormulaWeaponLog() {
   addFormulaByLogName(SHEET_NAME_WEAPON_LOG);
 }
 
+/**
+* Add Formula Starglitter Log
+*/
+function addFormulaStarglitterLog() {
+  addFormulaByLogName(SHEET_NAME_STARGLITTER_LOG);
+}
+/**
+* Add Formula Stardust Log
+*/
+function addFormulaStardustLog() {
+  addFormulaByLogName(SHEET_NAME_STARDUST_LOG);
+}
 
 /**
 * Add Formula for selected Log sheet
@@ -185,7 +205,7 @@ function addFormulaLog() {
   if (NAME_OF_LOG_HISTORIES.indexOf(logName) != -1) {
     addFormulaByLogName(logName);
   } else {
-    var message = 'Sheet must be called "' + SHEET_NAME_PRIMOGEM_LOG + '" or "' + SHEET_NAME_CRYSTAL_LOG + '" or "' + SHEET_NAME_RESIN_LOG + '" or "' + SHEET_NAME_MORA_LOG + '" or "' + SHEET_NAME_ARTIFACT_LOG + '" or "' + SHEET_NAME_WEAPON_LOG + '"';
+    var message = 'Sheet must be called "' + SHEET_NAME_PRIMOGEM_LOG + '" or "' + SHEET_NAME_CRYSTAL_LOG + '" or "' + SHEET_NAME_RESIN_LOG + '" or "' + SHEET_NAME_MORA_LOG + '" or "' + SHEET_NAME_ARTIFACT_LOG + '" or "' + '" or "' + SHEET_NAME_STARGLITTER_LOG + '" or "' + '" or "' + SHEET_NAME_STARDUST_LOG + '" or "' + SHEET_NAME_WEAPON_LOG + '"';
     var title = 'Invalid Sheet Name';
     SpreadsheetApp.getActiveSpreadsheet().toast(message, title);
   }
@@ -349,6 +369,59 @@ function getSettingsSheet() {
         }
         checkUserPreferenceExist(settingsSheet);
       }
+      // Migration step for v1.5 loading Starglitter and Stardust user preferences
+      isAvailable = settingsSheet.getRange("D47").getValue();
+      if (isAvailable == "") {
+        // Data Validation List updated
+        var rule = SpreadsheetApp.newDataValidation().requireValueInList(listOfSheets, true).build();
+        settingsSheet.getRange(11,2,23,1).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rule);
+
+        settingsSheet.getRange(15,4,1,2).setBorder(false, false, false, false, false, false).breakApart();
+        settingsSheet.getRange(16,4,1,2).breakApart();
+        // Place Mora at bottom
+        settingsSheet.getRange("D16").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(SHEET_NAME_MORA_LOG);
+        settingsSheet.getRange("E16").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setValue(settingsSheet.getRange("E14").getValue());
+        // Add Starglitter
+        settingsSheet.getRange("D14").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(SHEET_NAME_STARGLITTER_LOG);
+        settingsSheet.getRange("E14").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setValue('NOT DONE');
+        // Add Stardust
+        settingsSheet.getRange("D15").setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(SHEET_NAME_STARDUST_LOG);
+        settingsSheet.getRange("E15").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setValue('NOT DONE');
+        settingsSheet.getRange(17,4,1,2).setBorder(true, false, false, false, false, false, "black", SpreadsheetApp.BorderStyle.SOLID);
+
+        settingsSheet.getRange(47,4,2,1).mergeAcross().setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(SHEET_NAME_STARGLITTER_LOG);
+        settingsSheet.getRange("E47").setFontSize(10).setBackground("white").insertCheckboxes().setValue(true);
+
+        settingsSheet.getRange(49,4,2,1).mergeAcross().setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(SHEET_NAME_STARDUST_LOG);
+        settingsSheet.getRange("E49").setFontSize(10).setBackground("white").insertCheckboxes().setValue(true);
+  
+        // Load Starglitter Log Sheet if missing
+        var starglitterLogSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_STARGLITTER_LOG);
+        if (!starglitterLogSheet) {
+          if (!sheetSource) {
+            sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
+          }
+          var sheetStarglitterLogSource = sheetSource.getSheetByName(SHEET_NAME_STARGLITTER_LOG);
+          starglitterLogSheet = sheetStarglitterLogSource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
+          starglitterLogSheet.setName(SHEET_NAME_STARGLITTER_LOG);
+        }
+        // Load Stardust Log Sheet if missing
+        var stardustLogSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_STARDUST_LOG);
+        if (!stardustLogSheet) {
+          if (!sheetSource) {
+            sheetSource = SpreadsheetApp.openById(SHEET_SOURCE_ID);
+          }
+          var sheetStardustLogSource = sheetSource.getSheetByName(SHEET_NAME_STARDUST_LOG);
+          stardustLogSheet = sheetStardustLogSource.copyTo(SpreadsheetApp.getActiveSpreadsheet());
+          stardustLogSheet.setName(SHEET_NAME_STARDUST_LOG);
+        }
+        // Remove old Dashboard if exist
+        var removeDashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
+        if (removeDashboardSheet) {
+          SpreadsheetApp.getActiveSpreadsheet().deleteSheet(removeDashboardSheet);
+        }
+        checkUserPreferenceExist(settingsSheet);
+      }
     }
     var dashboardSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_DASHBOARD);
     var isDashboardUpToDate = false;
@@ -413,6 +486,19 @@ function checkUserPreferenceExist(settingsSheet) {
     settingsSheet.getRange(51,1).setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(USER_PREFERENCE_YEARLY_REPORT);
     settingsSheet.getRange(51,2).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rulePreferences).setValue("YES");
     settingsSheet.getRange(52,1,1,2).setBorder(true, false, false, false, false, false, "black", SpreadsheetApp.BorderStyle.SOLID).mergeAcross().setFontSize(11).setFontWeight("bold").setHorizontalAlignment("center").setValue("");
+  }
+  // Migration step for v1.5
+  if(settingsSheet.getRange("A52").getValue() != SHEET_NAME_MASTERLESS_LOG) {
+    // Missing Masterless user preference
+    settingsSheet.insertRowsAfter(52,3);
+
+    var rulePreferences = SpreadsheetApp.newDataValidation().requireValueInList(listOfPreferences, true).build();
+    settingsSheet.getRange(52,1,1,2).setBorder(true, false, false, false, false, false, "black", SpreadsheetApp.BorderStyle.SOLID).mergeAcross().setFontSize(11).setFontWeight("bold").setHorizontalAlignment("center").setValue(SHEET_NAME_MASTERLESS_LOG);
+    settingsSheet.getRange(53,1).setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(USER_PREFERENCE_MONTHLY_REPORT);
+    settingsSheet.getRange(53,2).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rulePreferences).setValue("YES");
+    settingsSheet.getRange(54,1).setFontSize(10).setFontWeight("bold").setHorizontalAlignment("center").setValue(USER_PREFERENCE_YEARLY_REPORT);
+    settingsSheet.getRange(54,2).setBackground("white").setFontSize(10).setFontWeight(null).setHorizontalAlignment("center").setDataValidation(rulePreferences).setValue("YES");
+    settingsSheet.getRange(55,1,1,2).setBorder(true, false, false, false, false, false, "black", SpreadsheetApp.BorderStyle.SOLID).mergeAcross().setFontSize(11).setFontWeight("bold").setHorizontalAlignment("center").setValue("");
   }
 }
 

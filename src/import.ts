@@ -245,8 +245,19 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
 
   let cookies: Cookies;
   serverDivideSpecificOp(serverDivide, {
-    cn: () => { (cookies as LedgerCookieCn) = { cookie_token: ltokenInput, account_id: ltuidInput }; },
-    os: () => { (cookies as LedgerCookieOs) = { ltoken: ltokenInput, ltuid: ltuidInput }; }
+    cn: () => { (cookies as LedgerCookieCn) = {
+      cookie_token: ltokenInput,
+      account_id: ltuidInput,
+      ltmid_v2: ltmidInput,
+      bind_uid: guidInput};
+    },
+    os: () => { (cookies as LedgerCookieOs) = {
+      ltoken_v2: ltokenInput,
+      ltuid_v2: ltuidInput,
+      ltmid_v2: ltmidInput,
+      ltoken: ltokenInput,
+      ltuid: ltuidInput
+    }}
   });
 
   const curYear = getServerTimeAsUtcNow(config.regionCode).getUTCFullYear();
@@ -257,7 +268,8 @@ function writeLedgerLogToSheet(logSheetInfo: ILogSheetInfo) {
   if (serverDivide === "os") {
     params.lang = config.languageCode;
   }
-
+  params.uid = guidInput;
+  params.page_size = 100;
   const endpoint = getApiEndpoint(logSheetInfo, serverDivide);
   const apiResponseMonthsAvailable
     = (requestApiResponse(endpoint, params, cookies) as LedgerApiResponse).data.optional_month;
@@ -499,6 +511,8 @@ const getResinLog = () => writeImServiceLogToSheet(RESIN_SHEET_INFO);
 const getArtifactLog = () => writeImServiceLogToSheet(ARTIFACT_SHEET_INFO);
 const getWeaponLog = () => writeImServiceLogToSheet(WEAPON_SHEET_INFO);
 const getMoraLog = () => writeLedgerLogToSheet(MORA_SHEET_INFO);
+const getStarglitterLog = () => writeImServiceLogToSheet(MASTERLESS_STARGLITTER_SHEET_INFO);
+const getStardustLog = () => writeImServiceLogToSheet(MASTERLESS_STARDUST_SHEET_INFO);
 
 const LOG_RANGES = {
   "Primogem Log": { "range_status": "E26", "range_toggle": "E19", "range_dashboard_length": "C15" },
@@ -506,11 +520,15 @@ const LOG_RANGES = {
   "Resin Log": { "range_status": "E28", "range_toggle": "E21", "range_dashboard_length": "C25" },
   "Artifact Log": { "range_status": "E29", "range_toggle": "E22", "range_dashboard_length": "C35" },
   "Weapon Log": { "range_status": "E46", "range_toggle": "E45", "range_dashboard_length": "C40" },
-  "Mora Log": { "range_status": "E39", "range_toggle": "E35", "range_dashboard_length": "C30" }
+  "Mora Log": { "range_status": "E39", "range_toggle": "E35", "range_dashboard_length": "C30" },
+  "Starglitter Log": { "range_status": "E48", "range_toggle": "E47", "range_dashboard_length": "C45" },
+  "Stardust Log": { "range_status": "E50", "range_toggle": "E49", "range_dashboard_length": "C49" },
 };
 
 const ltokenInput: string;
-const ltuidInput: string;
+const ltuidInput: number;
+const ltmidInput: string;
+const guidInput: number;
 
 function importFromAPI() {
   var settingsSheet = getSettingsSheet();
@@ -543,6 +561,10 @@ function importFromAPI() {
           getArtifactLog();
         } else if (logName == SHEET_NAME_WEAPON_LOG) {
           getWeaponLog();
+        } else if (logName == SHEET_NAME_STARGLITTER_LOG) {
+          getStarglitterLog();
+        } else if (logName == SHEET_NAME_STARDUST_LOG) {
+          getStardustLog();
         } else {
           settingsSheet.getRange(bannerSettings['range_status']).setValue("Error log sheet");
         }
@@ -555,6 +577,61 @@ function importFromAPI() {
   }
 
   settingsSheet.getRange("E25").setValue(new Date());
+}
+
+function loadImportFromHoYoLAB() {
+  var settingsSheet = getSettingsSheet();
+  loadHoYoLabData(settingsSheet);
+  importFromHoYoLAB();
+}
+
+function loadHoYoLABUIDPopup(settingsSheet) {
+  const result = displayUserPrompt("Auto Import with HoYoLab", `Enter ltuid/account_id_v2 to proceed.\nPress 'Yes' to amend\nPress 'No' to keep saved setting:\n`+ltuidInput, SpreadsheetApp.getUi().ButtonSet.YES_NO_CANCEL);
+
+  var button = result.getSelectedButton();
+  if (button == SpreadsheetApp.getUi().Button.YES) {
+    ltuidInput = result.getResponseText();
+    if (isHoYoIdCorrect(ltuidInput)) {
+      settingsSheet.getRange("E31").setValue(ltuidInput);
+      loadHoYoLABMIDPopup(settingsSheet);
+    } else {
+      settingsSheet.getRange(LOG_RANGES[SHEET_NAME_MORA_LOG]['range_status']).setValue("account_id_v2 is invalid");
+    }
+  } else if (button == SpreadsheetApp.getUi().Button.NO) {
+    loadHoYoLABMIDPopup(settingsSheet);
+  } else {
+    settingsSheet.getRange(LOG_RANGES[SHEET_NAME_MORA_LOG]['range_status']).setValue("User cancelled process");
+  }
+}
+
+function loadHoYoLABMIDPopup(settingsSheet) {
+  const result = displayUserPrompt("Auto Import with HoYoLab", `Enter account_mid_v2 to proceed.\nPress 'Yes' to amend\nPress 'No' to keep saved setting:\n`+ltmidInput, SpreadsheetApp.getUi().ButtonSet.YES_NO_CANCEL);
+
+  var button = result.getSelectedButton();
+  if (button == SpreadsheetApp.getUi().Button.YES) {
+    ltmidInput = result.getResponseText();
+    settingsSheet.getRange("E32").setValue(ltmidInput);
+    loadGenshinImpactUIDPopup(settingsSheet);
+  } else if (button == SpreadsheetApp.getUi().Button.NO) {
+    loadGenshinImpactUIDPopup(settingsSheet);
+  } else {
+    settingsSheet.getRange(LOG_RANGES[SHEET_NAME_MORA_LOG]['range_status']).setValue("User cancelled process");
+  }
+}
+
+function loadGenshinImpactUIDPopup(settingsSheet) {
+  const result = displayUserPrompt("Auto Import with HoYoLab", `Enter Genshin Impact UID to proceed.\nPress 'Yes' to amend\nPress 'No' to keep saved setting:\n`+guidInput, SpreadsheetApp.getUi().ButtonSet.YES_NO_CANCEL);
+
+  var button = result.getSelectedButton();
+  if (button == SpreadsheetApp.getUi().Button.YES) {
+    guidInput = result.getResponseText();
+    settingsSheet.getRange("E33").setValue(guidInput);
+    importFromHoYoLAB(settingsSheet);
+  } else if (button == SpreadsheetApp.getUi().Button.NO) {
+    importFromHoYoLAB(settingsSheet);
+  } else {
+    settingsSheet.getRange(LOG_RANGES[SHEET_NAME_MORA_LOG]['range_status']).setValue("User cancelled process");
+  }
 }
 
 function importFromHoYoLAB() {
@@ -578,17 +655,16 @@ function importFromHoYoLAB() {
       bannerSheet = SpreadsheetApp.getActive().getSheetByName(logName);
       if (bannerSheet) {
         if (logName == SHEET_NAME_MORA_LOG) {
-          ltuidInput = settingsSheet.getRange("D33").getValue();
-          if (ltuidInput.length == 0) {
-            const result = displayUserPrompt("Auto Import with HoYoLab", `Enter HoYoLAB UID to proceed\n.`);
+          if (guidInput.length == 0) {
+            const result = displayUserPrompt("Auto Import with HoYoLab", `Enter Genshin Impact UID to proceed.\n`, SpreadsheetApp.getUi().ButtonSet.OK_CANCEL);
             var button = result.getSelectedButton();
             if (button == SpreadsheetApp.getUi().Button.OK) {
-              ltuidInput = result.getResponseText();
-              if (isHoYoIdCorrect(ltuidInput)) {
-                settingsSheet.getRange("D33").setValue(ltuidInput);
+              guidInput = result.getResponseText();
+              if (guidInput.length > 0) {
+                settingsSheet.getRange("E33").setValue(guidInput);
                 getMoraLog();
               } else {
-                settingsSheet.getRange(bannerSettings['range_status']).setValue("HoYoLAB is invalid");
+                settingsSheet.getRange(bannerSettings['range_status']).setValue("Genshin Impact UID is empty");
               }
             } else {
               settingsSheet.getRange(bannerSettings['range_status']).setValue("User cancelled process");
@@ -609,7 +685,7 @@ function importFromHoYoLAB() {
   settingsSheet.getRange("E38").setValue(new Date());
 }
 
-function isHoYoIdCorrect(userInput: string) {
+function isHoYoIdCorrect(userInput: string): boolean {
   let isValid = false;
   if (userInput.match(/^[0-9]+$/) != null) {
     isValid = true;
