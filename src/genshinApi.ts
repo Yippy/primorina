@@ -8,8 +8,8 @@ type LocaleCode =
 
 const API_DOMAINS_BY_SERVER_DIVIDE = {
   feedback: {
-    cn: "hk4e-api.mihoyo.com",
-    os: "hk4e-api-os.hoyoverse.com",
+    cn: "public-operation-hk4e.mihoyo.com",
+    os: "public-operation-hk4e-sg.hoyoverse.com",
   },
   diary: {
     cn: "hk4e-api.mihoyo.com",
