@@ -63,9 +63,16 @@ function loadHoYoLabData(settingsSheet) {
     settingsSheet.getRange("E33").setValue("").setBackground("white").setNumberFormat("0");
   }
   ltokenInput = settingsSheet.getRange("E30").getValue();
-  ltuidInput = settingsSheet.getRange("E31").getValue().toFixed(0);
+
+  ltuidInput = settingsSheet.getRange("E31").getValue();
+  if(ltuidInput) {
+    ltuidInput.toFixed(0);
+  }
   ltmidInput = settingsSheet.getRange("E32").getValue();
-  guidInput = settingsSheet.getRange("E33").getValue().toFixed(0);
+  guidInput = settingsSheet.getRange("E33").getValue();
+  if(guidInput) {
+    guidInput.toFixed(0);
+  }
 }
 
 function importButtonScript() {
